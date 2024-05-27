@@ -1,41 +1,66 @@
-{"ACTIVITY_ROOMS" : [
-    "Old Hall",
-    "New Hall",
-    "Whittaker Room"
-],
+{
+    "ACTIVITY_ROOMS": [
+        "Old Hall",
+        "New Hall",
+        "Whittaker Room"
+    ],
 
-"FOOD_ROOMS" : [
-    "Lounge",
-    "Whittaker Room",
-    "Creché",
-    "Old Activities Room"
-],
+    "FOOD_ROOMS": [
+        "Lounge",
+        "Whittaker Room",
+        "Creche",
+        "Old Activities Room"
+    ],
 
-"PARTY_TYPES" : [
-    "Football",
-    "Fun & Games",
-    "Jungle Run / Inflatable",
-    "ACE",
-    "Toddler Gym"
-],
+    "PARTY_TYPES": [
+        "Football",
+        "Fun & Games",
+        "Jungle Run / Inflatable",
+        "ACE",
+        "Toddler Gym"
+    ],
 
-"PARTY_ROOM_AVAILABILITY" : {
-    "Football": {
-        "Old Hall": ["Lounge", "Old Activities Room"],
-        "New Hall": ["Creché", "Old Activities Room"]
-    },
-    "Fun & Games": {
-        "Old Hall": ["Lounge", "Old Activities Room"],
-        "New Hall": ["Creché", "Old Activities Room"]
-    },
-    "Jungle Run / Inflatable": {
-        "Old Hall": ["Lounge", "Old Activities Room"]
-    },
-    "ACE": {
-        "Old Hall": ["Lounge", "Old Activities Room"],
-        "New Hall": ["Creché", "Old Activities Room"]
-    },
-    "Toddler Gym": {
-        "Whittaker Room": ["Whittaker Room"]
+    "PARTY_ROOM_AVAILABILITY": {
+        "Football": {
+            "Old Hall": [
+                "Lounge",
+                "Old Activities Room"
+            ],
+            "New Hall": [
+                "Creche",
+                "Old Activities Room"
+            ]
+        },
+        "Fun & Games": {
+            "Old Hall": [
+                "Lounge",
+                "Old Activities Room"
+            ],
+            "New Hall": [
+                "Creche",
+                "Old Activities Room"
+            ]
+        },
+        "Jungle Run / Inflatable": {
+            "Old Hall": [
+                "Lounge",
+                "Old Activities Room"
+            ]
+        },
+        "ACE": {
+            "Old Hall": [
+                "Lounge",
+                "Old Activities Room"
+            ],
+            "New Hall": [
+                "Creche",
+                "Old Activities Room"
+            ]
+        },
+        "Toddler Gym": {
+            "Whittaker Room": [
+                "Whittaker Room"
+            ]
+        }
     }
-}}
+}
