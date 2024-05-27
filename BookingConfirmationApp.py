@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import ttkthemes
 import tkinter.simpledialog
+import tkinter.filedialog
 from tkcalendar import Calendar
 import docx
 from docx import Document
@@ -18,17 +19,15 @@ def LoadJSONData():
 data = LoadJSONData()
 SITE_NAME = data["SITE_NAME"]
 TEMPLATE_DOCUMENT = data["TEMPLATE_DOCUMENT"]
-COMPANY_LOGO = data["COMPANY_LOGO"]
 ACTIVITY_ROOMS = data["ACTIVITY_ROOMS"]
 FOOD_ROOMS = data["FOOD_ROOMS"]
 PARTY_TYPES = data["PARTY_TYPES"]
-PARTY_ROOM_AVAILABILITY = data["PARTY_ROOM_AVAILABILITY"]
 
 # Main Window
 ApplicationWindow = tk.Tk()
 ApplicationWindow.geometry(WINDOW_SIZE)
 ApplicationWindow.title(f"{SITE_NAME} - Party Confirmation Booking")
-ApplicationWindow.iconbitmap(COMPANY_LOGO)
+ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
 ApplicationWindow.resizable(False, False)
 
 # Applying Theme
@@ -44,26 +43,32 @@ staffNameInput, receiptNumberInput, dateSentEntry = None, None, None
 ApplicationMenu = tk.Menu(ApplicationWindow, tearoff=0)
 ApplicationWindow.config(menu=ApplicationMenu)
 
-# Add Rooms Menu
+# Add Rooms and Party Types Menu
 SettingsMenu = tk.Menu(ApplicationMenu, tearoff=0)
 ApplicationMenu.add_cascade(label="Settings", menu=SettingsMenu)
-SettingsMenu.add_command(label="Update Site Name", command=lambda: UpdateSiteName())
+SettingsMenu.add_command(label="Update Site Name", command=lambda: tk.simpledialog.askstring("Update Site Name", "Enter Site Name"))
+SettingsMenu.add_command(label="Update Template Document", command=lambda: UpdateTemplateDocument())
+SettingsMenu.add_separator()
+SettingsMenu.add_command(label="Update Food Rooms", command=lambda: OpenFoodRoomsWindow())
 SettingsMenu.add_command(label="Update Activity Rooms", command=lambda: OpenActivityRoomsWindow())
+SettingsMenu.add_command(label="Update Party Types", command=lambda: OpenPartyTypesWindow())
 
+ApplicationMenu.add_separator()
+ApplicationMenu.add_command(label="Exit", command=ApplicationWindow.quit)
 
-def UpdateSiteName():
-    global siteNameInput
-    siteName = tk.simpledialog.askstring("Update Site Name", "Enter Site Name")
-    if siteName:
-        global SITE_NAME
-        SITE_NAME = siteName
-        ApplicationWindow.title(f"{SITE_NAME} - Party Confirmation Booking")
+def UpdateTemplateDocument():
+    global TEMPLATE_DOCUMENT
+    TEMPLATE_DOCUMENT = tkinter.filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")])
+    data["TEMPLATE_DOCUMENT"] = TEMPLATE_DOCUMENT
+    with open('BookingData.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
 
 def OpenActivityRoomsWindow():
     ActivityRoomsWindow = tk.Toplevel(ApplicationWindow)
     ActivityRoomsWindow.geometry("480x480")
     ActivityRoomsWindow.title("Update Activity Rooms")
-    ActivityRoomsWindow.iconbitmap(COMPANY_LOGO)
+    ActivityRoomsWindow.iconbitmap("Media/FL_Logo.ico")
     ActivityRoomsWindow.resizable(False, False)
 
     # Activity Rooms Heading
@@ -74,7 +79,7 @@ def OpenActivityRoomsWindow():
     activityRoomsListbox = tk.Listbox(ActivityRoomsWindow, selectmode="multiple")
     activityRoomsListbox.pack(anchor="center", fill="both", expand=True, padx=5, pady=5)
     activityRoomsListbox.config(selectmode="single")
-    for room in ACTIVITY_ROOMS:
+    for room in ACTIVITY_ROOMS.keys():
         activityRoomsListbox.insert("end", room)
 
     # Add Room Button
@@ -86,89 +91,179 @@ def OpenActivityRoomsWindow():
     removeRoomButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
     # Save Changes Button
-    saveChangesButton = ttk.Button(ActivityRoomsWindow, text="Save Changes", command=lambda: SaveChanges(activityRoomsListbox))
+    saveChangesButton = ttk.Button(ActivityRoomsWindow, text="Save Changes", command=lambda: SaveChanges())
+    saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+def OpenPartyTypesWindow():
+    PartyTypesWindow = tk.Toplevel(ApplicationWindow)
+    PartyTypesWindow.geometry("480x480")
+    PartyTypesWindow.title("Update Party Types")
+    PartyTypesWindow.iconbitmap("Media/FL_Logo.ico")
+    PartyTypesWindow.resizable(False, False)
+
+    # Party Types Heading
+    headingLabel = ttk.Label(PartyTypesWindow, text="Party Types", font=("Arial", 16, "bold"))
+    headingLabel.pack(anchor="center")
+
+    # Party Types Listbox
+    partyTypesListbox = tk.Listbox(PartyTypesWindow, selectmode="multiple")
+    partyTypesListbox.pack(anchor="center", fill="both", expand=True, padx=5, pady=5)
+    partyTypesListbox.config(selectmode="single")
+    for party in PARTY_TYPES.keys():
+        partyTypesListbox.insert("end", party)
+
+    # Add Party Type Button
+    addPartyTypeButton = ttk.Button(PartyTypesWindow, text="Add Party Type", command=lambda: AddPartyType(partyTypesListbox))
+    addPartyTypeButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+    # Remove Party Type Button
+    removePartyTypeButton = ttk.Button(PartyTypesWindow, text="Remove Party Type", command=lambda: RemovePartyType(partyTypesListbox))
+    removePartyTypeButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+    # Save Changes Button
+    saveChangesButton = ttk.Button(PartyTypesWindow, text="Save Changes", command=lambda: SaveChanges())
+    saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+def OpenFoodRoomsWindow():
+    FoodRoomsWindow = tk.Toplevel(ApplicationWindow)
+    FoodRoomsWindow.geometry("480x480")
+    FoodRoomsWindow.title("Update Food Rooms")
+    FoodRoomsWindow.iconbitmap("Media/FL_Logo.ico")
+    FoodRoomsWindow.resizable(False, False)
+
+    # Food Rooms Heading
+    headingLabel = ttk.Label(FoodRoomsWindow, text="Food Rooms", font=("Arial", 16, "bold"))
+    headingLabel.pack(anchor="center")
+
+    # Food Rooms Listbox
+    foodRoomsListbox = tk.Listbox(FoodRoomsWindow, selectmode="multiple")
+    foodRoomsListbox.pack(anchor="center", fill="both", expand=True, padx=5, pady=5)
+    foodRoomsListbox.config(selectmode="single")
+    for food_room in FOOD_ROOMS:
+        foodRoomsListbox.insert("end", food_room)
+
+    # Add Food Room Button
+    addFoodRoomButton = ttk.Button(FoodRoomsWindow, text="Add Food Room", command=lambda: AddFoodRoom(foodRoomsListbox))
+    addFoodRoomButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+    # Remove Food Room Button
+    removeFoodRoomButton = ttk.Button(FoodRoomsWindow, text="Remove Food Room", command=lambda: RemoveFoodRoom(foodRoomsListbox))
+    removeFoodRoomButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+    # Save Changes Button
+    saveChangesButton = ttk.Button(FoodRoomsWindow, text="Save Changes", command=lambda: SaveChanges())
     saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
 def AddRoom(listbox):
     roomName = tk.simpledialog.askstring("Add Room", "Enter Room Name")
     if roomName:
-        activityVars = {}
-        activitySelectionWindow = tk.Toplevel(ApplicationWindow)
-        activitySelectionWindow.geometry("300x400")
-        activitySelectionWindow.title("Select Activities")
-        activitySelectionWindow.resizable(False, False)
+        foodRoomVars = {}
+        foodRoomSelectionWindow = tk.Toplevel(ApplicationWindow)
+        foodRoomSelectionWindow.geometry("300x400")
+        foodRoomSelectionWindow.title("Select Food Rooms")
+        foodRoomSelectionWindow.resizable(False, False)
 
-        # Activity Checkboxes
-        for activity in PARTY_TYPES:
+        # Food Rooms Checkboxes
+        for foodRoom in FOOD_ROOMS:
             var = tk.BooleanVar()
-            chk = ttk.Checkbutton(activitySelectionWindow, text=activity, variable=var)
+            chk = ttk.Checkbutton(foodRoomSelectionWindow, text=foodRoom, variable=var)
             chk.pack(anchor='w')
-            activityVars[activity] = var
+            foodRoomVars[foodRoom] = var
 
-        def selectFoodRooms():
-            selectedActivities = [activity for activity, var in activityVars.items() if var.get()]
-            activitySelectionWindow.destroy()
+        def saveFoodRooms():
+            selectedFoodRooms = [room for room, var in foodRoomVars.items() if var.get()]
+            ACTIVITY_ROOMS[roomName] = selectedFoodRooms
+            listbox.insert("end", roomName)
+            UpdateDropdowns()
+            foodRoomSelectionWindow.destroy()
 
-            foodRoomVars = {}
-            foodRoomSelectionWindow = tk.Toplevel(ApplicationWindow)
-            foodRoomSelectionWindow.geometry("300x400")
-            foodRoomSelectionWindow.title("Select Food Rooms")
-            foodRoomSelectionWindow.resizable(False, False)
-
-            # Food Rooms Checkboxes
-            for foodRoom in FOOD_ROOMS:
-                var = tk.BooleanVar()
-                chk = ttk.Checkbutton(foodRoomSelectionWindow, text=foodRoom, variable=var)
-                chk.pack(anchor='w')
-                foodRoomVars[foodRoom] = var
-
-            def saveFoodRooms():
-                selectedFoodRooms = [room for room, var in foodRoomVars.items() if var.get()]
-                for activity in selectedActivities:
-                    PARTY_ROOM_AVAILABILITY.setdefault(activity, {})
-                    PARTY_ROOM_AVAILABILITY[activity][roomName] = selectedFoodRooms
-                listbox.insert("end", roomName)
-                ACTIVITY_ROOMS.append(roomName)
-                foodRoomSelectionWindow.destroy()
-
-            saveButton = ttk.Button(foodRoomSelectionWindow, text="Save", command=saveFoodRooms)
-            saveButton.pack(anchor="center", pady=10)
-
-        selectActivitiesButton = ttk.Button(activitySelectionWindow, text="Next", command=selectFoodRooms)
-        selectActivitiesButton.pack(anchor="center", pady=10)
+        saveButton = ttk.Button(foodRoomSelectionWindow, text="Save", command=saveFoodRooms)
+        saveButton.pack(anchor="center", pady=10)
 
 def RemoveRoom(listbox):
-    # Remove Selected Room from Listbox and JSON Data File
     selectedRooms = listbox.curselection()
     for roomIndex in selectedRooms:
         roomName = listbox.get(roomIndex)
         listbox.delete(roomIndex)
-        ACTIVITY_ROOMS.remove(roomName)
-        for activity in PARTY_ROOM_AVAILABILITY:
-            if roomName in PARTY_ROOM_AVAILABILITY[activity]:
-                del PARTY_ROOM_AVAILABILITY[activity][roomName]
+        del ACTIVITY_ROOMS[roomName]
+        for partyType in PARTY_TYPES.values():
+            if roomName in partyType:
+                partyType.remove(roomName)
+    UpdateDropdowns()
 
-def SaveChanges(listbox):
-    # Save Changes to JSON Data File
+def AddPartyType(listbox):
+    partyTypeName = tk.simpledialog.askstring("Add Party Type", "Enter Party Type Name")
+    if partyTypeName:
+        activityRoomVars = {}
+        activityRoomSelectionWindow = tk.Toplevel(ApplicationWindow)
+        activityRoomSelectionWindow.geometry("300x400")
+        activityRoomSelectionWindow.title("Select Activity Rooms")
+        activityRoomSelectionWindow.resizable(False, False)
+
+        # Activity Rooms Checkboxes
+        for activityRoom in ACTIVITY_ROOMS.keys():
+            var = tk.BooleanVar()
+            chk = ttk.Checkbutton(activityRoomSelectionWindow, text=activityRoom, variable=var)
+            chk.pack(anchor='w')
+            activityRoomVars[activityRoom] = var
+
+        def saveActivityRooms():
+            selectedActivityRooms = [room for room, var in activityRoomVars.items() if var.get()]
+            PARTY_TYPES[partyTypeName] = selectedActivityRooms
+            listbox.insert("end", partyTypeName)
+            UpdateDropdowns()
+            activityRoomSelectionWindow.destroy()
+
+        saveButton = ttk.Button(activityRoomSelectionWindow, text="Save", command=saveActivityRooms)
+        saveButton.pack(anchor="center", pady=10)
+
+def RemovePartyType(listbox):
+    selectedPartyTypes = listbox.curselection()
+    for partyIndex in selectedPartyTypes:
+        partyTypeName = listbox.get(partyIndex)
+        listbox.delete(partyIndex)
+        del PARTY_TYPES[partyTypeName]
+    UpdateDropdowns()
+
+def AddFoodRoom(listbox):
+    foodRoomName = tk.simpledialog.askstring("Add Food Room", "Enter Food Room Name")
+    if foodRoomName:
+        FOOD_ROOMS.append(foodRoomName)
+        listbox.insert("end", foodRoomName)
+        UpdateDropdowns()
+
+def RemoveFoodRoom(listbox):
+    selectedFoodRooms = listbox.curselection()
+    for foodRoomIndex in selectedFoodRooms:
+        foodRoomName = listbox.get(foodRoomIndex)
+        listbox.delete(foodRoomIndex)
+        FOOD_ROOMS.remove(foodRoomName)
+        for room, foodRooms in ACTIVITY_ROOMS.items():
+            if foodRoomName in foodRooms:
+                foodRooms.remove(foodRoomName)
+    UpdateDropdowns()
+
+def SaveChanges():
     with open('BookingData.json', 'w') as file:
         json.dump(data, file, indent=4)
+    UpdateDropdowns()
+
+def UpdateDropdowns():
+    partyOptionsDropdown["values"] = list(PARTY_TYPES.keys())
+    partyActivityRoomDropdown["values"] = []
 
 def GenerateCustomerInformationSection():
     global nameInput, contactNumberInput, emailAddressInput
-    # Customer Heading
     headingLabel = ttk.Label(ApplicationWindow, text="Customer Information", font=("Arial", 16, "bold"))
     headingLabel.pack(anchor="center")
-    # Customer Name
     nameLabel = ttk.Label(ApplicationWindow, text="Customer Name", font=("Arial", 8, "bold underline"))
     nameLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     nameInput = ttk.Entry(ApplicationWindow)
     nameInput.pack(anchor="w", fill="x", padx=5, pady=3)
-    # Customer Contact Number
     contactNumberLabel = ttk.Label(ApplicationWindow, text="Contact Number", font=("Arial", 8, "bold underline"))
     contactNumberLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     contactNumberInput = ttk.Entry(ApplicationWindow)
     contactNumberInput.pack(anchor="w", fill="x", padx=5, pady=3)
-    # Customer Email Address
     emailAddressLabel = ttk.Label(ApplicationWindow, text="Email Address", font=("Arial", 8, "bold underline"))
     emailAddressLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     emailAddressInput = ttk.Entry(ApplicationWindow)
@@ -179,55 +274,45 @@ def PartyRoomAvailability(event):
     partyType = partyOptionsDropdown.get()
     partyActivityRoomDropdown.set("Select...")
     partyFoodRoomDropdown.set("Select...")
-    partyActivityRoomDropdown["values"] = list(ACTIVITY_ROOMS)
-    partyFoodRoomDropdown["values"] = list(FOOD_ROOMS)
-    if partyType in PARTY_ROOM_AVAILABILITY:
-        activityRooms = list(PARTY_ROOM_AVAILABILITY[partyType].keys())
+    if partyType in PARTY_TYPES:
+        activityRooms = PARTY_TYPES[partyType]
         partyActivityRoomDropdown["values"] = activityRooms
-        partyActivityRoomDropdown.bind("<<ComboboxSelected>>", UpdateFoodRoomAvailability)
 
 def UpdateFoodRoomAvailability(event):
     global partyFoodRoomDropdown
-    partyType = partyOptionsDropdown.get()
     partyActivityRoom = partyActivityRoomDropdown.get()
     partyFoodRoomDropdown.set("Select...")
-    if partyActivityRoom in PARTY_ROOM_AVAILABILITY[partyType]:
-        foodRooms = PARTY_ROOM_AVAILABILITY[partyType][partyActivityRoom]
+    if partyActivityRoom in ACTIVITY_ROOMS:
+        foodRooms = ACTIVITY_ROOMS[partyActivityRoom]
         partyFoodRoomDropdown["values"] = foodRooms
 
 def GeneratePartyInformationSection():
     global partyOptionsDropdown, partyFoodRoomDropdown, partyActivityRoomDropdown, partyDateSelector, partyStartTimeEntry, partyEndTimeEntry
-    # Party Information
     headingLabel = ttk.Label(ApplicationWindow, text="Party Information", font=("Arial", 16, "bold"))
     headingLabel.pack(anchor="center")
-    # Party Options
     partyOptionsLabel = ttk.Label(ApplicationWindow, text="Party Type", font=("Arial", 8, "bold underline"))
     partyOptionsLabel.pack(anchor="w", fill="x", padx=5, pady=3)
-    partyOptionsDropdown = ttk.Combobox(ApplicationWindow, values=PARTY_TYPES)
+    partyOptionsDropdown = ttk.Combobox(ApplicationWindow, values=list(PARTY_TYPES.keys()))
     partyOptionsDropdown.pack(anchor="w", fill="x", padx=5, pady=3)
     partyOptionsDropdown.set("Select...")
     partyOptionsDropdown.bind("<<ComboboxSelected>>", lambda event: PartyRoomAvailability(event))
-    # Party Activity Room
     partyActivityRoomLabel = ttk.Label(ApplicationWindow, text="Party Activity Room", font=("Arial", 8, "bold underline"))
     partyActivityRoomLabel.pack(anchor="w", fill="x", padx=5, pady=3)
-    partyActivityRoomDropdown = ttk.Combobox(ApplicationWindow, values=ACTIVITY_ROOMS)
+    partyActivityRoomDropdown = ttk.Combobox(ApplicationWindow, values=[])
     partyActivityRoomDropdown.pack(anchor="w", fill="x", padx=5, pady=3)
     partyActivityRoomDropdown.set("Select...")
-    # Party Food Room
+    partyActivityRoomDropdown.bind("<<ComboboxSelected>>", lambda event: UpdateFoodRoomAvailability(event))
     partyFoodRoomLabel = ttk.Label(ApplicationWindow, text="Party Food Room", font=("Arial", 8, "bold underline"))
     partyFoodRoomLabel.pack(anchor="w", fill="x", padx=5, pady=3)
-    partyFoodRoomDropdown = ttk.Combobox(ApplicationWindow, values=FOOD_ROOMS)
+    partyFoodRoomDropdown = ttk.Combobox(ApplicationWindow, values=[])
     partyFoodRoomDropdown.pack(anchor="w", fill="x", padx=5, pady=3)
     partyFoodRoomDropdown.set("Select...")
-    # Party Date
     partyDateLabel = ttk.Label(ApplicationWindow, text="Date", font=("Arial", 8, "bold underline"))
     partyDateLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     partyDateSelector = Calendar(ApplicationWindow, selectmode="day")
     partyDateSelector.pack(anchor="w", fill="x", padx=5, pady=3)
-    # Party Time Frame
     partyTimeFrame = ttk.Frame(ApplicationWindow)
     partyTimeFrame.pack(anchor="center", fill="x", padx=5, pady=3)
-    # Party Time
     partyStartTimeLabel = ttk.Label(partyTimeFrame, text="Start", font=("Arial", 8, "bold underline"))
     partyStartTimeLabel.pack(anchor="w", padx=5, pady=3, side="left")
     partyStartTimeEntry = ttk.Entry(partyTimeFrame, width=15)
@@ -239,20 +324,16 @@ def GeneratePartyInformationSection():
 
 def GenerateAdminSection():
     global staffNameInput, receiptNumberInput, dateSentEntry
-    # Admin Heading
     headingLabel = ttk.Label(ApplicationWindow, text="Admin Information", font=("Arial", 16, "bold"))
     headingLabel.pack(anchor="center")
-    # Staff Name
     staffNameLabel = ttk.Label(ApplicationWindow, text="Staff Name", font=("Arial", 8, "bold underline"))
     staffNameLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     staffNameInput = ttk.Entry(ApplicationWindow)
     staffNameInput.pack(anchor="w", fill="x", padx=5, pady=3)
-    # Receipt Number
     receiptNumberLabel = ttk.Label(ApplicationWindow, text="Receipt Number", font=("Arial", 8, "bold underline"))
     receiptNumberLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     receiptNumberInput = ttk.Entry(ApplicationWindow)
     receiptNumberInput.pack(anchor="w", fill="x", padx=5, pady=3)
-    # Date Sent
     dateSentLabel = ttk.Label(ApplicationWindow, text="Date Sent", font=("Arial", 8, "bold underline"))
     dateSentLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     dateSentEntry = ttk.Entry(ApplicationWindow)
@@ -309,11 +390,9 @@ def GenerateDocument():
 
     templateDocument.save(f"Booking Confirmation - {nameInput.get()} - {partyOptionsDropdown.get()}.docx")
 
-# Submit Button using ttk Button
 submitButton = ttk.Button(ApplicationWindow, text="Generate Party Confirmation", command=GenerateDocument)
 submitButton.pack(anchor="center", side="bottom", padx=10, pady=5, fill="x")
 
-# Run Application
 GenerateCustomerInformationSection()
 GeneratePartyInformationSection()
 GenerateAdminSection()

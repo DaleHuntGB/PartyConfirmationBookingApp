@@ -1,66 +1,50 @@
 {
-    "TEMPLATE_DOCUMENT": "PartyBookingConfirmationTemplate.docx",
     "SITE_NAME": "Portslade Sports Centre",
-    "COMPANY_LOGO": "Media/FL_Logo.ico",
-    "ACTIVITY_ROOMS": [
-        "Old Hall",
-        "New Hall",
-        "Whittaker Room"
-    ],
+    "TEMPLATE_DOCUMENT": "PartyBookingConfirmationTemplate.docx",
+    "ACTIVITY_ROOMS": {
+        "Old Hall": [
+            "Lounge",
+            "Old Activities Room"
+        ],
+        "New Hall": [
+            "Creche",
+            "Old Activities Room"
+        ],
+        "Whittaker Room": [
+            "Whittaker Room"
+        ],
+        "Test Activity Room": [
+            "Test Food Room"
+        ]
+    },
     "FOOD_ROOMS": [
         "Lounge",
         "Whittaker Room",
         "Creche",
-        "Old Activities Room"
+        "Old Activities Room",
+        "Test Food Room"
     ],
-    "PARTY_TYPES": [
-        "Football",
-        "Fun & Games",
-        "Jungle Run / Inflatable",
-        "ACE",
-        "Toddler Gym"
-    ],
-    "PARTY_ROOM_AVAILABILITY": {
-        "Football": {
-            "Old Hall": [
-                "Lounge",
-                "Old Activities Room"
-            ],
-            "New Hall": [
-                "Creche",
-                "Old Activities Room"
-            ]
-        },
-        "Fun & Games": {
-            "Old Hall": [
-                "Lounge",
-                "Old Activities Room"
-            ],
-            "New Hall": [
-                "Creche",
-                "Old Activities Room"
-            ]
-        },
-        "Jungle Run / Inflatable": {
-            "Old Hall": [
-                "Lounge",
-                "Old Activities Room"
-            ]
-        },
-        "ACE": {
-            "Old Hall": [
-                "Lounge",
-                "Old Activities Room"
-            ],
-            "New Hall": [
-                "Creche",
-                "Old Activities Room"
-            ]
-        },
-        "Toddler Gym": {
-            "Whittaker Room": [
-                "Whittaker Room"
-            ]
-        }
+    "PARTY_TYPES": {
+        "Football": [
+            "Old Hall",
+            "New Hall"
+        ],
+        "Fun & Games": [
+            "Old Hall",
+            "New Hall"
+        ],
+        "Jungle Run / Inflatable": [
+            "Old Hall"
+        ],
+        "ACE": [
+            "Old Hall",
+            "New Hall"
+        ],
+        "Toddler Gym": [
+            "Whittaker Room"
+        ],
+        "Test Party": [
+            "Test Activity Room"
+        ]
     }
 }
