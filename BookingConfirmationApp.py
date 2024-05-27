@@ -4,53 +4,22 @@ import ttkthemes
 from tkcalendar import Calendar
 import docx
 from docx import Document
+import json
 
-WINDOW_SIZE = "480x700"
+WINDOW_SIZE = "480x720"
 WINDOW_TITLE = "Party Confirmation Booking"
 TEMPLATE_DOCUMENT = "PartyBookingConfirmationTemplate.docx"
 SITE_NAME = "Portslade Sports Centre"
 
-ACTIVITY_ROOMS = [
-    "Old Hall",
-    "New Hall",
-    "Whittaker Room",
-]
+def LoadJSONData():
+    with open('BookingData.json', 'r') as file:
+        return json.load(file)
 
-FOOD_ROOMS = [
-    "Lounge",
-    "Whittaker Room",
-    "Creché",
-    "Old Activities Room"
-]
-
-PARTY_TYPES = [
-    "Football",
-    "Fun & Games",
-    "Jungle Run / Inflatable",
-    "ACE",
-    "Toddler Gym"
-]
-
-PARTY_ROOM_AVAILABILITY = {
-    "Football": {
-        "Old Hall": ["Lounge", "Old Activities Room"],
-        "New Hall": ["Creché", "Old Activities Room"]
-    },
-    "Fun & Games": {
-        "Old Hall": ["Lounge", "Old Activities Room"],
-        "New Hall": ["Creché", "Old Activities Room"]
-    },
-    "Jungle Run / Inflatable": {
-        "Old Hall": ["Lounge", "Old Activities Room"]
-    },
-    "ACE": {
-        "Old Hall": ["Lounge", "Old Activities Room"],
-        "New Hall": ["Creché", "Old Activities Room"]
-    },
-    "Toddler Gym": {
-        "Whittaker Room": ["Whittaker Room"]
-    }
-}
+data = LoadJSONData()
+ACTIVITY_ROOMS = data["ACTIVITY_ROOMS"]
+FOOD_ROOMS = data["FOOD_ROOMS"]
+PARTY_TYPES = data["PARTY_TYPES"]
+PARTY_ROOM_AVAILABILITY = data["PARTY_ROOM_AVAILABILITY"]
 
 # Main Window
 ApplicationWindow = tk.Tk()
@@ -71,6 +40,12 @@ partyOptionsDropdown, partyFoodRoomDropdown, partyActivityRoomDropdown, partyDat
 ApplicationMenu = tk.Menu(ApplicationWindow)
 ApplicationWindow.config(menu=ApplicationMenu)
 
+# Add Rooms Menu
+RoomsMenu = tk.Menu(ApplicationMenu, tearoff=0)
+ApplicationMenu.add_cascade(label="Settings", menu=RoomsMenu)
+RoomsMenu.add_command(label="Update Activity Rooms", command=lambda: print(ACTIVITY_ROOMS))
+RoomsMenu.add_command(label="Update Food Rooms", command=lambda: print(FOOD_ROOMS))
+RoomsMenu.add_command(label="Update Party Types", command=lambda: print(PARTY_TYPES))
 
 def CustomerInformationSection():
     global nameInput, contactNumberInput, emailAddressInput
