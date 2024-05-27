@@ -8,12 +8,19 @@ import docx
 from docx import Document
 import json
 from datetime import date
+import sys 
+import os
 
 WINDOW_SIZE = "480x940"
 WINDOW_TITLE = "Party Confirmation Booking"
 
 def LoadJSONData():
-    with open('BookingData.json', 'r') as file:
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+    else:
+        application_path = os.path.dirname(os.path.abspath(__file__))
+    json_file_path = os.path.join(application_path, 'BookingData.json')
+    with open(json_file_path, 'r') as file:
         return json.load(file)
 
 data = LoadJSONData()
@@ -46,7 +53,7 @@ ApplicationWindow.config(menu=ApplicationMenu)
 # Add Rooms and Party Types Menu
 SettingsMenu = tk.Menu(ApplicationMenu, tearoff=0)
 ApplicationMenu.add_cascade(label="Settings", menu=SettingsMenu)
-SettingsMenu.add_command(label="Update Site Name", command=lambda: tk.simpledialog.askstring("Update Site Name", "Enter Site Name"))
+SettingsMenu.add_command(label="Update Site Name", command=lambda: UpdateSiteName())
 SettingsMenu.add_command(label="Update Template Document", command=lambda: UpdateTemplateDocument())
 SettingsMenu.add_separator()
 SettingsMenu.add_command(label="Update Food Rooms", command=lambda: OpenFoodRoomsWindow())
@@ -56,12 +63,29 @@ SettingsMenu.add_command(label="Update Party Types", command=lambda: OpenPartyTy
 ApplicationMenu.add_separator()
 ApplicationMenu.add_command(label="Exit", command=ApplicationWindow.quit)
 
+def UpdateSiteName():
+    global SITE_NAME, data
+    SITE_NAME = tk.simpledialog.askstring("Update Site Name", "Enter Site Name")
+    if SITE_NAME:
+        data["SITE_NAME"] = SITE_NAME
+        with open('BookingData.json', 'w') as file:
+            json.dump(data, file, indent=4)
+        # Reload the JSON data
+        data = LoadJSONData()
+        SITE_NAME = data["SITE_NAME"]
+    ApplicationWindow.title(f"{SITE_NAME} - Party Confirmation Booking")
+
 def UpdateTemplateDocument():
-    global TEMPLATE_DOCUMENT
+    global TEMPLATE_DOCUMENT, data
     TEMPLATE_DOCUMENT = tkinter.filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")])
-    data["TEMPLATE_DOCUMENT"] = TEMPLATE_DOCUMENT
-    with open('BookingData.json', 'w') as file:
-        json.dump(data, file, indent=4)
+    if TEMPLATE_DOCUMENT:
+        data["TEMPLATE_DOCUMENT"] = TEMPLATE_DOCUMENT
+        with open('BookingData.json', 'w') as file:
+            json.dump(data, file, indent=4)
+        # Reload the JSON data
+        data = LoadJSONData()
+        TEMPLATE_DOCUMENT = data["TEMPLATE_DOCUMENT"]
+
 
 
 def OpenActivityRoomsWindow():
@@ -342,6 +366,7 @@ def GenerateAdminSection():
     dateSentEntry.config(state="readonly")
 
 def GenerateDocument():
+    global TEMPLATE_DOCUMENT
     
     CUSTOMER_INFORMATION = {
         "CUSTOMER_NAME": nameInput.get(),
@@ -375,7 +400,7 @@ def GenerateDocument():
                 paragraph.text = paragraph.text.replace(key, value)
         for key, value in ADMIN_INFORMATION.items():
             if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(key, value)
+                paragraph.text.replace(key, value)
 
     # Clear Entry Widgets
     nameInput.delete(0, "end")
@@ -388,7 +413,9 @@ def GenerateDocument():
     partyEndTimeEntry.delete(0, "end")
     receiptNumberInput.delete(0, "end")
 
-    templateDocument.save(f"Booking Confirmation - {nameInput.get()} - {partyOptionsDropdown.get()}.docx")
+    output_filename = f"Booking Confirmation - {CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_INFORMATION['PARTY_TYPE']}.docx"
+    templateDocument.save(output_filename)
+    tk.messagebox.showinfo("Success", f"Document saved as {output_filename}")
 
 submitButton = ttk.Button(ApplicationWindow, text="Generate Party Confirmation", command=GenerateDocument)
 submitButton.pack(anchor="center", side="bottom", padx=10, pady=5, fill="x")
