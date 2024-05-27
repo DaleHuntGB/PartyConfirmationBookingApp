@@ -46,7 +46,7 @@ ApplicationWindow.config(menu=ApplicationMenu)
 # Add Rooms Menu
 RoomsMenu = tk.Menu(ApplicationMenu, tearoff=0)
 ApplicationMenu.add_cascade(label="Settings", menu=RoomsMenu)
-RoomsMenu.add_command(label="Update Activity Rooms", command=lambda:OpenActivityRoomsWindow())
+RoomsMenu.add_command(label="Update Activity Rooms", command=lambda: OpenActivityRoomsWindow())
 
 def OpenActivityRoomsWindow():
     ActivityRoomsWindow = tk.Toplevel(ApplicationWindow)
@@ -81,8 +81,50 @@ def OpenActivityRoomsWindow():
 def AddRoom(listbox):
     roomName = tk.simpledialog.askstring("Add Room", "Enter Room Name")
     if roomName:
-        listbox.insert("end", roomName)
-        ACTIVITY_ROOMS.append(roomName)
+        activityVars = {}
+        activitySelectionWindow = tk.Toplevel(ApplicationWindow)
+        activitySelectionWindow.geometry("300x400")
+        activitySelectionWindow.title("Select Activities")
+        activitySelectionWindow.resizable(False, False)
+
+        # Activity Checkboxes
+        for activity in PARTY_TYPES:
+            var = tk.BooleanVar()
+            chk = ttk.Checkbutton(activitySelectionWindow, text=activity, variable=var)
+            chk.pack(anchor='w')
+            activityVars[activity] = var
+
+        def selectFoodRooms():
+            selectedActivities = [activity for activity, var in activityVars.items() if var.get()]
+            activitySelectionWindow.destroy()
+
+            foodRoomVars = {}
+            foodRoomSelectionWindow = tk.Toplevel(ApplicationWindow)
+            foodRoomSelectionWindow.geometry("300x400")
+            foodRoomSelectionWindow.title("Select Food Rooms")
+            foodRoomSelectionWindow.resizable(False, False)
+
+            # Food Rooms Checkboxes
+            for foodRoom in FOOD_ROOMS:
+                var = tk.BooleanVar()
+                chk = ttk.Checkbutton(foodRoomSelectionWindow, text=foodRoom, variable=var)
+                chk.pack(anchor='w')
+                foodRoomVars[foodRoom] = var
+
+            def saveFoodRooms():
+                selectedFoodRooms = [room for room, var in foodRoomVars.items() if var.get()]
+                for activity in selectedActivities:
+                    PARTY_ROOM_AVAILABILITY.setdefault(activity, {})
+                    PARTY_ROOM_AVAILABILITY[activity][roomName] = selectedFoodRooms
+                listbox.insert("end", roomName)
+                ACTIVITY_ROOMS.append(roomName)
+                foodRoomSelectionWindow.destroy()
+
+            saveButton = ttk.Button(foodRoomSelectionWindow, text="Save", command=saveFoodRooms)
+            saveButton.pack(anchor="center", pady=10)
+
+        selectActivitiesButton = ttk.Button(activitySelectionWindow, text="Next", command=selectFoodRooms)
+        selectActivitiesButton.pack(anchor="center", pady=10)
 
 def RemoveRoom(listbox):
     # Remove Selected Room from Listbox and JSON Data File
@@ -91,6 +133,9 @@ def RemoveRoom(listbox):
         roomName = listbox.get(roomIndex)
         listbox.delete(roomIndex)
         ACTIVITY_ROOMS.remove(roomName)
+        for activity in PARTY_ROOM_AVAILABILITY:
+            if roomName in PARTY_ROOM_AVAILABILITY[activity]:
+                del PARTY_ROOM_AVAILABILITY[activity][roomName]
 
 def SaveChanges(listbox):
     # Save Changes to JSON Data File
@@ -138,7 +183,6 @@ def UpdateFoodRoomAvailability(event):
     if partyActivityRoom in PARTY_ROOM_AVAILABILITY[partyType]:
         foodRooms = PARTY_ROOM_AVAILABILITY[partyType][partyActivityRoom]
         partyFoodRoomDropdown["values"] = foodRooms
-
 
 def GeneratePartyInformationSection():
     global partyOptionsDropdown, partyFoodRoomDropdown, partyActivityRoomDropdown, partyDateSelector, partyStartTimeEntry, partyEndTimeEntry

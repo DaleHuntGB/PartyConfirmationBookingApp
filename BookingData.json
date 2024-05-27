@@ -4,14 +4,12 @@
         "New Hall",
         "Whittaker Room"
     ],
-
     "FOOD_ROOMS": [
         "Lounge",
         "Whittaker Room",
         "Creche",
         "Old Activities Room"
     ],
-
     "PARTY_TYPES": [
         "Football",
         "Fun & Games",
@@ -19,7 +17,6 @@
         "ACE",
         "Toddler Gym"
     ],
-
     "PARTY_ROOM_AVAILABILITY": {
         "Football": {
             "Old Hall": [
