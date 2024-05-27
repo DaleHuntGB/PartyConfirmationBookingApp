@@ -10,14 +10,15 @@ from datetime import date
 
 WINDOW_SIZE = "480x940"
 WINDOW_TITLE = "Party Confirmation Booking"
-TEMPLATE_DOCUMENT = "PartyBookingConfirmationTemplate.docx"
-SITE_NAME = "Portslade Sports Centre"
 
 def LoadJSONData():
     with open('BookingData.json', 'r') as file:
         return json.load(file)
 
 data = LoadJSONData()
+SITE_NAME = data["SITE_NAME"]
+TEMPLATE_DOCUMENT = data["TEMPLATE_DOCUMENT"]
+COMPANY_LOGO = data["COMPANY_LOGO"]
 ACTIVITY_ROOMS = data["ACTIVITY_ROOMS"]
 FOOD_ROOMS = data["FOOD_ROOMS"]
 PARTY_TYPES = data["PARTY_TYPES"]
@@ -27,7 +28,7 @@ PARTY_ROOM_AVAILABILITY = data["PARTY_ROOM_AVAILABILITY"]
 ApplicationWindow = tk.Tk()
 ApplicationWindow.geometry(WINDOW_SIZE)
 ApplicationWindow.title(f"{SITE_NAME} - Party Confirmation Booking")
-ApplicationWindow.iconbitmap("FL_Logo.ico")
+ApplicationWindow.iconbitmap(COMPANY_LOGO)
 ApplicationWindow.resizable(False, False)
 
 # Applying Theme
@@ -44,15 +45,25 @@ ApplicationMenu = tk.Menu(ApplicationWindow, tearoff=0)
 ApplicationWindow.config(menu=ApplicationMenu)
 
 # Add Rooms Menu
-RoomsMenu = tk.Menu(ApplicationMenu, tearoff=0)
-ApplicationMenu.add_cascade(label="Settings", menu=RoomsMenu)
-RoomsMenu.add_command(label="Update Activity Rooms", command=lambda: OpenActivityRoomsWindow())
+SettingsMenu = tk.Menu(ApplicationMenu, tearoff=0)
+ApplicationMenu.add_cascade(label="Settings", menu=SettingsMenu)
+SettingsMenu.add_command(label="Update Site Name", command=lambda: UpdateSiteName())
+SettingsMenu.add_command(label="Update Activity Rooms", command=lambda: OpenActivityRoomsWindow())
+
+
+def UpdateSiteName():
+    global siteNameInput
+    siteName = tk.simpledialog.askstring("Update Site Name", "Enter Site Name")
+    if siteName:
+        global SITE_NAME
+        SITE_NAME = siteName
+        ApplicationWindow.title(f"{SITE_NAME} - Party Confirmation Booking")
 
 def OpenActivityRoomsWindow():
     ActivityRoomsWindow = tk.Toplevel(ApplicationWindow)
     ActivityRoomsWindow.geometry("480x480")
     ActivityRoomsWindow.title("Update Activity Rooms")
-    ActivityRoomsWindow.iconbitmap("FL_Logo.ico")
+    ActivityRoomsWindow.iconbitmap(COMPANY_LOGO)
     ActivityRoomsWindow.resizable(False, False)
 
     # Activity Rooms Heading

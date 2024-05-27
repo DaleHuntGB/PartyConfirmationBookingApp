@@ -1,4 +1,7 @@
 {
+    "TEMPLATE_DOCUMENT": "PartyBookingConfirmationTemplate.docx",
+    "SITE_NAME": "Portslade Sports Centre",
+    "COMPANY_LOGO": "Media/FL_Logo.ico",
     "ACTIVITY_ROOMS": [
         "Old Hall",
         "New Hall",
