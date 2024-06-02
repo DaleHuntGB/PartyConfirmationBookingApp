@@ -7,7 +7,7 @@ from tkcalendar import Calendar
 import docx
 from docx import Document
 import json
-from datetime import date
+from datetime import datetime
 import sys 
 import os
 
@@ -29,6 +29,7 @@ TEMPLATE_DOCUMENT = data["TEMPLATE_DOCUMENT"]
 ACTIVITY_ROOMS = data["ACTIVITY_ROOMS"]
 FOOD_ROOMS = data["FOOD_ROOMS"]
 PARTY_TYPES = data["PARTY_TYPES"]
+PARTY_COSTS = data["PARTY_COSTS"]
 
 # Main Window
 ApplicationWindow = tk.Tk()
@@ -53,12 +54,13 @@ ApplicationWindow.config(menu=ApplicationMenu)
 # Add Rooms and Party Types Menu
 SettingsMenu = tk.Menu(ApplicationMenu, tearoff=0)
 ApplicationMenu.add_cascade(label="Settings", menu=SettingsMenu)
-SettingsMenu.add_command(label="Update Site Name", command=lambda: UpdateSiteName())
-SettingsMenu.add_command(label="Update Template Document", command=lambda: UpdateTemplateDocument())
+SettingsMenu.add_command(label="Site Name", command=lambda: UpdateSiteName())
+SettingsMenu.add_command(label="Template Document", command=lambda: UpdateTemplateDocument())
 SettingsMenu.add_separator()
-SettingsMenu.add_command(label="Update Food Rooms", command=lambda: OpenFoodRoomsWindow())
-SettingsMenu.add_command(label="Update Activity Rooms", command=lambda: OpenActivityRoomsWindow())
-SettingsMenu.add_command(label="Update Party Types", command=lambda: OpenPartyTypesWindow())
+SettingsMenu.add_command(label="Food Rooms", command=lambda: OpenFoodRoomsWindow())
+SettingsMenu.add_command(label="Activity Rooms", command=lambda: OpenActivityRoomsWindow())
+SettingsMenu.add_command(label="Party Types", command=lambda: OpenPartyTypesWindow())
+SettingsMenu.add_command(label="Party Costs", command=lambda: OpenPartyCostsWindow())
 
 ApplicationMenu.add_separator()
 ApplicationMenu.add_command(label="Exit", command=ApplicationWindow.quit)
@@ -85,8 +87,6 @@ def UpdateTemplateDocument():
         # Reload the JSON data
         data = LoadJSONData()
         TEMPLATE_DOCUMENT = data["TEMPLATE_DOCUMENT"]
-
-
 
 def OpenActivityRoomsWindow():
     ActivityRoomsWindow = tk.Toplevel(ApplicationWindow)
@@ -230,11 +230,18 @@ def AddPartyType(listbox):
             chk = ttk.Checkbutton(activityRoomSelectionWindow, text=activityRoom, variable=var)
             chk.pack(anchor='w')
             activityRoomVars[activityRoom] = var
+        
+        # Add Price
+        priceLabel = ttk.Label(activityRoomSelectionWindow, text="Price", font=("Arial", 8, "bold underline"))
+        priceLabel.pack(anchor="w", fill="x", padx=5, pady=3)
+        priceInput = ttk.Entry(activityRoomSelectionWindow)
+        priceInput.pack(anchor="w", fill="x", padx=5, pady=3)
 
         def saveActivityRooms():
             selectedActivityRooms = [room for room, var in activityRoomVars.items() if var.get()]
             PARTY_TYPES[partyTypeName] = selectedActivityRooms
             listbox.insert("end", partyTypeName)
+            PARTY_COSTS[partyTypeName] = priceInput.get()
             UpdateDropdowns()
             activityRoomSelectionWindow.destroy()
 
@@ -246,6 +253,7 @@ def RemovePartyType(listbox):
     for partyIndex in selectedPartyTypes:
         partyTypeName = listbox.get(partyIndex)
         listbox.delete(partyIndex)
+        del PARTY_COSTS[partyTypeName]
         del PARTY_TYPES[partyTypeName]
     UpdateDropdowns()
 
@@ -276,6 +284,55 @@ def SaveChanges(window):
 def UpdateDropdowns():
     partyOptionsDropdown["values"] = list(PARTY_TYPES.keys())
     partyActivityRoomDropdown["values"] = []
+
+def OpenPartyCostsWindow():
+    PartyCostsWindow = tk.Toplevel(ApplicationWindow)
+    PartyCostsWindow.geometry("480x480")
+    PartyCostsWindow.title("Update Party Costs")
+    # ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
+    PartyCostsWindow.resizable(False, False)
+
+    # Activity Rooms Heading
+    headingLabel = ttk.Label(PartyCostsWindow, text="Party Costs", font=("Arial", 16, "bold"))
+    headingLabel.pack(anchor="center")
+
+    # Party Costs Listbox
+    partyCostsListbox = tk.Listbox(PartyCostsWindow, selectmode="multiple")
+    partyCostsListbox.pack(anchor="center", fill="both", expand=True, padx=5, pady=5)
+    partyCostsListbox.config(selectmode="single")
+    for party, cost in PARTY_COSTS.items():
+        partyCostsListbox.insert("end", f"{party} - £{cost}")
+
+    # Edit Party Costs Button
+    editPartyCostsButton = ttk.Button(PartyCostsWindow, text="Edit Party Costs", command=lambda: EditPartyCosts(partyCostsListbox))
+    editPartyCostsButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+    # Delete Party Costs Button
+    deletePartyCostsButton = ttk.Button(PartyCostsWindow, text="Delete Party Costs", command=lambda: RemovePartyCost(partyCostsListbox))
+    deletePartyCostsButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+    # Save Changes Button
+    saveChangesButton = ttk.Button(PartyCostsWindow, text="Save Changes", command=lambda: SaveChanges(PartyCostsWindow))
+    saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
+
+def RemovePartyCost(listbox):
+    selectedPartyCosts = listbox.curselection()
+    for partyCostIndex in selectedPartyCosts:
+        partyCost = listbox.get(partyCostIndex)
+        partyName, cost = partyCost.split(" - £")
+        del PARTY_COSTS[partyName]
+        listbox.delete(partyCostIndex)
+
+def EditPartyCosts(listbox):
+    selectedPartyCosts = listbox.curselection()
+    for partyCostIndex in selectedPartyCosts:
+        partyCost = listbox.get(partyCostIndex)
+        partyName, cost = partyCost.split(" - £")
+        newCost = tk.simpledialog.askstring("Edit Party Cost", f"Enter New Cost for {partyName}")
+        if newCost:
+            PARTY_COSTS[partyName] = newCost
+            listbox.delete(partyCostIndex)
+            listbox.insert(partyCostIndex, f"{partyName} - £{newCost}")
 
 def GenerateCustomerInformationSection():
     global nameInput, contactNumberInput, emailAddressInput
@@ -360,10 +417,11 @@ def GenerateAdminSection():
     dateBookedSelector = Calendar(ApplicationWindow, selectmode="day")
     dateBookedSelector.pack(anchor="w", fill="x", padx=5, pady=3)
 
-
 def GenerateDocument():
     global TEMPLATE_DOCUMENT
     shortenedCustomerName = nameInput.get().split(" ")[0]
+    UKPartyDate = datetime.strptime(partyDateSelector.get_date(), "%m/%d/%y").strftime("%d/%m/%Y")
+    UKBookedDate = datetime.strptime(dateBookedSelector.get_date(), "%m/%d/%y").strftime("%d/%m/%Y")
     
     CUSTOMER_INFORMATION = {
         "CUSTOMER_NAME": nameInput.get(),
@@ -376,14 +434,15 @@ def GenerateDocument():
         "PARTY_TYPE": partyOptionsDropdown.get(),
         "PARTY_FOOD_ROOM": partyFoodRoomDropdown.get(),
         "PARTY_ACTIVITY_ROOM": partyActivityRoomDropdown.get(),
-        "PARTY_DATE": partyDateSelector.get_date(),
+        "PARTY_DATE": UKPartyDate,
         "PARTY_START_TIME": partyStartTimeEntry.get(),
         "PARTY_END_TIME": partyEndTimeEntry.get(),
+        "COST_OF_PARTY": PARTY_COSTS[partyOptionsDropdown.get()]
     }
 
     ADMIN_INFORMATION = {
         "STAFF_NAME": staffNameInput.get(),
-        "BOOKING_DATE": dateBookedSelector.get_date()
+        "BOOKING_DATE": UKBookedDate
     }
 
     templateDocument = Document(TEMPLATE_DOCUMENT)

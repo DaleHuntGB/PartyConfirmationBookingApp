@@ -13,7 +13,8 @@
         "Whittaker Room": [
             "Whittaker Room"
         ],
-        "Test Activity Room": [
+        "3G": [
+            "Creche",
             "Old Activities Room"
         ]
     },
@@ -42,5 +43,12 @@
         "Toddler Gym": [
             "Whittaker Room"
         ]
+    },
+    "PARTY_COSTS": {
+        "Football": "1",
+        "Fun & Games": "2",
+        "Jungle Run": "3",
+        "ACE": "4",
+        "Toddler Gym": "5"
     }
 }
