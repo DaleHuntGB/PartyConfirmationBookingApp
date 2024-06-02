@@ -1,15 +1,9 @@
 import tkinter as tk
-from tkinter import ttk
-import ttkthemes
-import tkinter.simpledialog
-import tkinter.filedialog
+from tkinter import ttk, simpledialog, messagebox, filedialog
+import ttkthemes, os, sys, json
 from tkcalendar import Calendar
-import docx
 from docx import Document
-import json
 from datetime import datetime
-import sys 
-import os
 
 WINDOW_SIZE = "480x940"
 WINDOW_TITLE = "Party Confirmation Booking"
