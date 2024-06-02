@@ -27,3 +27,9 @@ Entry Points will reset so that users do not need to re-open the application, sp
 ### Structured Layout
 
 ![Structured Layout](Media/GUIStructure.png)
+
+# TODO:
+
+- Update GUI.
+- Restructure Party/Activity/Food Room layout.
+- Stop using JSON to store edited data - Local Storage?
