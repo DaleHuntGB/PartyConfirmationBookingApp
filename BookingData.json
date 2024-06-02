@@ -14,15 +14,14 @@
             "Whittaker Room"
         ],
         "Test Activity Room": [
-            "Test Food Room"
+            "Old Activities Room"
         ]
     },
     "FOOD_ROOMS": [
         "Lounge",
         "Whittaker Room",
         "Creche",
-        "Old Activities Room",
-        "Test Food Room"
+        "Old Activities Room"
     ],
     "PARTY_TYPES": {
         "Football": [
@@ -33,7 +32,7 @@
             "Old Hall",
             "New Hall"
         ],
-        "Jungle Run / Inflatable": [
+        "Jungle Run": [
             "Old Hall"
         ],
         "ACE": [
@@ -42,9 +41,6 @@
         ],
         "Toddler Gym": [
             "Whittaker Room"
-        ],
-        "Test Party": [
-            "Test Activity Room"
         ]
     }
 }

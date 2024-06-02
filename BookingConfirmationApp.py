@@ -34,7 +34,7 @@ PARTY_TYPES = data["PARTY_TYPES"]
 ApplicationWindow = tk.Tk()
 ApplicationWindow.geometry(WINDOW_SIZE)
 ApplicationWindow.title(f"{SITE_NAME} - Party Confirmation Booking")
-ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
+# ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
 ApplicationWindow.resizable(False, False)
 
 # Applying Theme
@@ -44,7 +44,7 @@ ApplicationTheme.set_theme("breeze")
 # Global variables for entry widgets and other controls
 nameInput, contactNumberInput, emailAddressInput = None, None, None
 partyOptionsDropdown, partyFoodRoomDropdown, partyActivityRoomDropdown, partyDateSelector, partyStartTimeEntry, partyEndTimeEntry = None, None, None, None, None, None
-staffNameInput, receiptNumberInput, dateSentEntry = None, None, None
+staffNameInput, dateBookedSelector = None, None
 
 # Create Menu
 ApplicationMenu = tk.Menu(ApplicationWindow, tearoff=0)
@@ -92,7 +92,7 @@ def OpenActivityRoomsWindow():
     ActivityRoomsWindow = tk.Toplevel(ApplicationWindow)
     ActivityRoomsWindow.geometry("480x480")
     ActivityRoomsWindow.title("Update Activity Rooms")
-    ActivityRoomsWindow.iconbitmap("Media/FL_Logo.ico")
+    # ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
     ActivityRoomsWindow.resizable(False, False)
 
     # Activity Rooms Heading
@@ -122,7 +122,7 @@ def OpenPartyTypesWindow():
     PartyTypesWindow = tk.Toplevel(ApplicationWindow)
     PartyTypesWindow.geometry("480x480")
     PartyTypesWindow.title("Update Party Types")
-    PartyTypesWindow.iconbitmap("Media/FL_Logo.ico")
+    # ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
     PartyTypesWindow.resizable(False, False)
 
     # Party Types Heading
@@ -152,7 +152,7 @@ def OpenFoodRoomsWindow():
     FoodRoomsWindow = tk.Toplevel(ApplicationWindow)
     FoodRoomsWindow.geometry("480x480")
     FoodRoomsWindow.title("Update Food Rooms")
-    FoodRoomsWindow.iconbitmap("Media/FL_Logo.ico")
+    # ApplicationWindow.iconbitmap("Media/FL_Logo.ico")
     FoodRoomsWindow.resizable(False, False)
 
     # Food Rooms Heading
@@ -347,29 +347,26 @@ def GeneratePartyInformationSection():
     partyEndTimeEntry.pack(anchor="e", padx=5, pady=3, side="right")
 
 def GenerateAdminSection():
-    global staffNameInput, receiptNumberInput, dateSentEntry
+    global staffNameInput, dateBookedSelector
     headingLabel = ttk.Label(ApplicationWindow, text="Admin Information", font=("Arial", 16, "bold"))
     headingLabel.pack(anchor="center")
     staffNameLabel = ttk.Label(ApplicationWindow, text="Staff Name", font=("Arial", 8, "bold underline"))
     staffNameLabel.pack(anchor="w", fill="x", padx=5, pady=3)
     staffNameInput = ttk.Entry(ApplicationWindow)
     staffNameInput.pack(anchor="w", fill="x", padx=5, pady=3)
-    receiptNumberLabel = ttk.Label(ApplicationWindow, text="Receipt Number", font=("Arial", 8, "bold underline"))
-    receiptNumberLabel.pack(anchor="w", fill="x", padx=5, pady=3)
-    receiptNumberInput = ttk.Entry(ApplicationWindow)
-    receiptNumberInput.pack(anchor="w", fill="x", padx=5, pady=3)
-    dateSentLabel = ttk.Label(ApplicationWindow, text="Date Sent", font=("Arial", 8, "bold underline"))
-    dateSentLabel.pack(anchor="w", fill="x", padx=5, pady=3)
-    dateSentEntry = ttk.Entry(ApplicationWindow)
-    dateSentEntry.pack(anchor="w", fill="x", padx=5, pady=3)
-    dateSentEntry.insert(0, date.today().strftime("%d/%m/%Y"))
-    dateSentEntry.config(state="readonly")
+    dateBookedLabel = ttk.Label(ApplicationWindow, text="Date Booked", font=("Arial", 8, "bold underline"))
+    dateBookedLabel.pack(anchor="w", fill="x", padx=5, pady=3)
+    dateBookedSelector = Calendar(ApplicationWindow, selectmode="day")
+    dateBookedSelector.pack(anchor="w", fill="x", padx=5, pady=3)
+
 
 def GenerateDocument():
     global TEMPLATE_DOCUMENT
+    shortenedCustomerName = nameInput.get().split(" ")[0]
     
     CUSTOMER_INFORMATION = {
         "CUSTOMER_NAME": nameInput.get(),
+        "FIRST_NAME": shortenedCustomerName,
         "CONTACT_NUMBER": contactNumberInput.get(),
         "EMAIL_ADDRESS": emailAddressInput.get()
     }
@@ -385,8 +382,7 @@ def GenerateDocument():
 
     ADMIN_INFORMATION = {
         "STAFF_NAME": staffNameInput.get(),
-        "RECEIPT_NUMBER": receiptNumberInput.get(),
-        "DATE_SENT": dateSentEntry.get()
+        "BOOKING_DATE": dateBookedSelector.get_date()
     }
 
     templateDocument = Document(TEMPLATE_DOCUMENT)
@@ -395,12 +391,20 @@ def GenerateDocument():
         for key, value in CUSTOMER_INFORMATION.items():
             if key in paragraph.text:
                 paragraph.text = paragraph.text.replace(key, value)
-        for key, value in PARTY_INFORMATION.items():
-            if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(key, value)
-        for key, value in ADMIN_INFORMATION.items():
-            if key in paragraph.text:
-                paragraph.text.replace(key, value)
+
+    for table in templateDocument.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for key, value in CUSTOMER_INFORMATION.items():
+                    if key in cell.text:
+                        cell.text = cell.text.replace(key, value)
+                for key, value in PARTY_INFORMATION.items():
+                    if key in cell.text:
+                        cell.text = cell.text.replace(key, value)
+                for key, value in ADMIN_INFORMATION.items():
+                    if key in cell.text:
+                        cell.text.replace(key, value)
+                        print(cell.text, key, value)
 
     # Clear Entry Widgets
     nameInput.delete(0, "end")
@@ -411,7 +415,6 @@ def GenerateDocument():
     partyActivityRoomDropdown.set("Select...")
     partyStartTimeEntry.delete(0, "end")
     partyEndTimeEntry.delete(0, "end")
-    receiptNumberInput.delete(0, "end")
 
     output_filename = f"Booking Confirmation - {CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_INFORMATION['PARTY_TYPE']}.docx"
     templateDocument.save(output_filename)
