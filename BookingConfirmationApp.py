@@ -393,6 +393,7 @@ def GenerateDocument():
             if key in paragraph.text:
                 paragraph.text = paragraph.text.replace(key, value)
 
+    # Check Tables
     for table in templateDocument.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -406,6 +407,18 @@ def GenerateDocument():
                     if key in cell.text:
                         cell.text.replace(key, value)
 
+    # Check Table Columns and Row Cells
+    for table in templateDocument.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for key, value in PARTY_INFORMATION.items():
+                        if key in paragraph.text:
+                            paragraph.text = paragraph.text.replace(key, value)
+                    for key, value in ADMIN_INFORMATION.items():
+                        if key in paragraph.text:
+                            paragraph.text = paragraph.text.replace(key, value)
+
     # Clear Entry Widgets
     nameInput.delete(0, "end")
     contactNumberInput.delete(0, "end")
@@ -416,7 +429,7 @@ def GenerateDocument():
     partyStartTimeEntry.delete(0, "end")
     partyEndTimeEntry.delete(0, "end")
 
-    output_filename = f"{CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_INFORMATION['PARTY_DATE']}.docx"
+    output_filename = f"Booking Confirmation - {CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_INFORMATION['PARTY_TYPE']}.docx"
     templateDocument.save(output_filename)
     tk.messagebox.showinfo("Success", f"Document saved as {output_filename}")
 
