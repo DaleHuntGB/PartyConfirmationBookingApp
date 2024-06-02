@@ -115,7 +115,7 @@ def OpenActivityRoomsWindow():
     removeRoomButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
     # Save Changes Button
-    saveChangesButton = ttk.Button(ActivityRoomsWindow, text="Save Changes", command=lambda: SaveChanges())
+    saveChangesButton = ttk.Button(ActivityRoomsWindow, text="Save Changes", command=lambda: SaveChanges(ActivityRoomsWindow))
     saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
 def OpenPartyTypesWindow():
@@ -145,7 +145,7 @@ def OpenPartyTypesWindow():
     removePartyTypeButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
     # Save Changes Button
-    saveChangesButton = ttk.Button(PartyTypesWindow, text="Save Changes", command=lambda: SaveChanges())
+    saveChangesButton = ttk.Button(PartyTypesWindow, text="Save Changes", command=lambda: SaveChanges(PartyTypesWindow))
     saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
 def OpenFoodRoomsWindow():
@@ -175,7 +175,7 @@ def OpenFoodRoomsWindow():
     removeFoodRoomButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
     # Save Changes Button
-    saveChangesButton = ttk.Button(FoodRoomsWindow, text="Save Changes", command=lambda: SaveChanges())
+    saveChangesButton = ttk.Button(FoodRoomsWindow, text="Save Changes", command=lambda: SaveChanges(FoodRoomsWindow))
     saveChangesButton.pack(anchor="center", fill="x", padx=5, pady=5)
 
 def AddRoom(listbox):
@@ -267,10 +267,11 @@ def RemoveFoodRoom(listbox):
                 foodRooms.remove(foodRoomName)
     UpdateDropdowns()
 
-def SaveChanges():
+def SaveChanges(window):
     with open('BookingData.json', 'w') as file:
         json.dump(data, file, indent=4)
     UpdateDropdowns()
+    window.destroy()
 
 def UpdateDropdowns():
     partyOptionsDropdown["values"] = list(PARTY_TYPES.keys())
@@ -404,7 +405,6 @@ def GenerateDocument():
                 for key, value in ADMIN_INFORMATION.items():
                     if key in cell.text:
                         cell.text.replace(key, value)
-                        print(cell.text, key, value)
 
     # Clear Entry Widgets
     nameInput.delete(0, "end")
@@ -416,7 +416,7 @@ def GenerateDocument():
     partyStartTimeEntry.delete(0, "end")
     partyEndTimeEntry.delete(0, "end")
 
-    output_filename = f"Booking Confirmation - {CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_INFORMATION['PARTY_TYPE']}.docx"
+    output_filename = f"{CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_INFORMATION['PARTY_DATE']}.docx"
     templateDocument.save(output_filename)
     tk.messagebox.showinfo("Success", f"Document saved as {output_filename}")
 
