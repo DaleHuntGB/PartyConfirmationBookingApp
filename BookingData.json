@@ -38,13 +38,16 @@
         ],
         "Toddler Gym": [
             "Whittaker Room"
+        ],
+        "Kieran Loader Party": [
+            "Old Hall",
+            "New Hall"
         ]
     },
     "PARTY_COSTS": {
         "Football": "1",
         "Fun & Games": "2",
         "Jungle Run": "3",
-        "ACE": "4",
-        "Toddler Gym": "5"
+        "ACE": "4"
     }
 }

@@ -414,8 +414,10 @@ def GenerateAdminSection():
 def GenerateDocument():
     global TEMPLATE_DOCUMENT
     shortenedCustomerName = nameInput.get().split(" ")[0]
-    UKPartyDate = datetime.strptime(partyDateSelector.get_date(), "%m/%d/%y").strftime("%d/%m/%Y")
-    UKBookedDate = datetime.strptime(dateBookedSelector.get_date(), "%m/%d/%y").strftime("%d/%m/%Y")
+    partyDate = datetime.strptime(partyDateSelector.get_date(), "%m/%d/%Y")
+    bookedDate = datetime.strptime(dateBookedSelector.get_date(), "%m/%d/%Y")
+    UKPartyDate = partyDate.strftime("%d/%m/%Y")
+    UKBookedDate = bookedDate.strftime("%d/%m/%Y")
     
     CUSTOMER_INFORMATION = {
         "CUSTOMER_NAME": nameInput.get(),
@@ -469,7 +471,7 @@ def GenerateDocument():
                         if key in paragraph.text:
                             paragraph.text = paragraph.text.replace(key, value)
                     for key, value in ADMIN_INFORMATION.items():
-                        if key in paragraph.text:
+                        if key in paragr130aph.text:
                             paragraph.text = paragraph.text.replace(key, value)
 
     # Clear Entry Widgets
@@ -493,3 +495,7 @@ GenerateCustomerInformationSection()
 GeneratePartyInformationSection()
 GenerateAdminSection()
 ApplicationWindow.mainloop()
+
+# TODO: Error Check for Unselected Party Type / Food Room / Activity Room
+# TODO: Food Rooms - Select Activity Room.
+# TODO: Make Pretty :)
