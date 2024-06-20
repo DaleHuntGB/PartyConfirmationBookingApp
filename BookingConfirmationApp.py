@@ -252,9 +252,9 @@ def GenerateDocument():
                             paragraph.text = paragraph.text.replace(key, str(value))
 
     # Save the modified document
-    output_file = "BookingConfirmation.docx"
+    output_file = f"{CustomerNameEntry.get()} - {PARTY_ACTIVITY} - Party Confirmation.docx"
     templateDocument.save(output_file)
-    messagebox.showinfo("Success", f"Confirmation document generated and saved as {output_file}")
+    messagebox.showinfo("Success", f"Document Saved: {output_file}")
 
     # Clear Fields
     CustomerNameEntry.delete(0, "end")
