@@ -21,33 +21,9 @@
         "Old Activities Room"
     ],
     "PARTY_TYPES": {
-        "Football": [
-            "Old Hall",
-            "New Hall"
-        ],
-        "Fun & Games": [
-            "Old Hall",
-            "New Hall"
-        ],
-        "Jungle Run": [
-            "Old Hall"
-        ],
-        "ACE": [
-            "Old Hall",
-            "New Hall"
-        ],
-        "Toddler Gym": [
-            "Whittaker Room"
-        ],
-        "Kieran Loader Party": [
-            "Old Hall",
-            "New Hall"
-        ]
-    },
-    "PARTY_COSTS": {
-        "Football": "1",
-        "Fun & Games": "2",
-        "Jungle Run": "3",
-        "ACE": "4"
+        "Football": 120,
+        "Fun & Games": 150,
+        "Jungle Run": 175,
+        "ACE": 200
     }
 }
