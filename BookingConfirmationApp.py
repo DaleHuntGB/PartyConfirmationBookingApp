@@ -225,13 +225,13 @@ def GenerateDocument():
     if PartyEndTimeEntry.get() == "":
         messagebox.showerror("Error", "Party End Time: Missing!")
         return
-    if partyTypes == []:
+    if not any(partyType.instate(['selected']) for partyType in PartyTypeCheckboxes):
         messagebox.showerror("Error", "Party Type: Missing!")
         return
-    if activityRooms == []:
+    if not any(partyRoom.instate(['selected']) for partyRoom in PartyRoomCheckboxes):
         messagebox.showerror("Error", "Party Room: Missing!")
         return
-    if foodRooms == []:
+    if not any(partyFoodRoom.instate(['selected']) for partyFoodRoom in PartyFoodRoomCheckboxes):
         messagebox.showerror("Error", "Party Food Room: Missing!")
         return
     if DateBookedEntry.get() == "":
