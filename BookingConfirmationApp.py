@@ -15,8 +15,8 @@ def Load_JSON():
             return appData
     except:
         print("ERROR: Unable To Load JSON Data")
-        return None    
-appData = Load_JSON()
+        return None
+appData = Load_JSON()   
 
 # JSON Data
 siteName = appData["SITE_NAME"]
@@ -36,13 +36,16 @@ PartyStartTimeEntry = None,
 PartyEndTimeEntry = None,
 PartyTypeCheckboxes = [],
 PartyRoomCheckboxes = [],
-PartyFoodRoomCheckboxes = []
+PartyFoodRoomCheckboxes = [],
+DateBookedEntry = None,
+StaffMemberEntry = None
 # Create Application Window
 
 def CreateApp():
     global CustomerNameEntry, CustomerEmailEntry, CustomerPhoneEntry
     global ChildNameEntry, ChildAgeEntry
     global PartyDateEntry, PartyStartTimeEntry, PartyEndTimeEntry, PartyTypeCheckboxes, PartyRoomCheckboxes, PartyFoodRoomCheckboxes
+    global DateBookedEntry, StaffMemberEntry
     # Variables
     WINDOW_TITLE = "Booking Confirmation App"
     WINDOW_SIZE = "800x600"
@@ -167,11 +170,30 @@ def CreateApp():
     print("SUCCESS: Party Information Container Created")
 
     ## ## ## ## ## ## ## ##
+    # Admin
+    ## ## ## ## ## ## ## ##
+
+    # Container
+    AdminContainer = ttk.LabelFrame(AppWindow, text="Admin")
+    AdminContainer.pack(padx=0, pady=0, fill="x", after=PartyInformationContainer)
+    # Date Booked - Label
+    DateBookedLabel = ttk.Label(AdminContainer, text="Date Booked:")
+    DateBookedLabel.grid(row=0, column=0, padx=5, pady=5)
+    # Date Booked - Entry
+    DateBookedEntry = ttk.Entry(AdminContainer)
+    DateBookedEntry.grid(row=0, column=1, padx=5, pady=5)
+    # Staff Member - Label
+    StaffMemberLabel = ttk.Label(AdminContainer, text="Staff Member:")
+    StaffMemberLabel.grid(row=0, column=2, padx=5, pady=5)
+    # Staff Member - Entry
+    StaffMemberEntry = ttk.Entry(AdminContainer)
+    StaffMemberEntry.grid(row=0, column=3, padx=5, pady=5)
+
+    ## ## ## ## ## ## ## ##
     # Generate Document Button
     ## ## ## ## ## ## ## ##
     GenerateDocumentButton = ttk.Button(AppWindow, text="Generate Confirmation", command=GenerateDocument)
     GenerateDocumentButton.pack(padx=0, pady=0, fill="x", side="top", anchor="n")
-
 
     # Loop Until Closed
     AppWindow.mainloop()
@@ -180,6 +202,7 @@ def GenerateDocument():
     global CustomerNameEntry, CustomerEmailEntry, CustomerPhoneEntry
     global ChildNameEntry, ChildAgeEntry
     global PartyDateEntry, PartyStartTimeEntry, PartyEndTimeEntry, PartyTypeCheckboxes, PartyRoomCheckboxes, PartyFoodRoomCheckboxes
+    global DateBookedEntry, StaffMemberEntry
     global templateDocument
     PARTY_TYPE = []
     for partyType in PartyTypeCheckboxes:
@@ -188,7 +211,6 @@ def GenerateDocument():
             PARTY_TYPE = PARTY_TYPE[0].split(":")
             PARTY_ACTIVITY = PARTY_TYPE[0]
             PARTY_COST = PARTY_TYPE[1].replace("£", "")
-            print(PARTY_ACTIVITY, PARTY_COST)
     PARTY_ROOM = []
     for partyRoom in PartyRoomCheckboxes:
         if partyRoom.instate(['selected']):
@@ -218,12 +240,26 @@ def GenerateDocument():
         "PARTY_ROOM": PARTY_ROOM,
         "PARTY_FOOD_ROOM": PARTY_FOOD_ROOM
     }
+    ADMIN_INFORMATION = {
+        "CUSTOMER_FIRST_NAME": CustomerNameEntry.get().split(" ")[0],
+        "DATE_BOOKED": DateBookedEntry.get(),
+        "STAFF_MEMBER": StaffMemberEntry.get()
+    }
     templateDocument = Document(templateDocument)
 
     for paragraph in templateDocument.paragraphs:
         for key, value in CUSTOMER_INFORMATION.items():
             if key in paragraph.text:
                 paragraph.text = paragraph.text.replace(key, value)
+        for key, value in PARTY_INFORMATION.items():
+            if key in paragraph.text:
+                paragraph.text = paragraph.text.replace(key, str(value))
+        for key, value in CHILD_INFORMATION.items():
+            if key in paragraph.text:
+                paragraph.text = paragraph.text.replace(key, str(value))
+        for key, value in ADMIN_INFORMATION.items():
+            if key in paragraph.text:
+                paragraph.text = paragraph.text.replace(key, str(value))
 
     # Check Tables
     for table in templateDocument.tables:
@@ -238,6 +274,9 @@ def GenerateDocument():
                 for key, value in CHILD_INFORMATION.items():
                     if key in cell.text:
                         cell.text = cell.text.replace(key, str(value))
+                for key, value in ADMIN_INFORMATION.items():
+                    if key in cell.text:
+                        cell.text = cell.text.replace(key, str(value))
 
     # Check Table Columns and Row Cells
     for table in templateDocument.tables:
@@ -250,10 +289,14 @@ def GenerateDocument():
                     for key, value in CHILD_INFORMATION.items():
                         if key in paragraph.text:
                             paragraph.text = paragraph.text.replace(key, str(value))
+                    for key, value in ADMIN_INFORMATION.items():
+                        if key in paragraph.text:
+                            paragraph.text = paragraph.text.replace(key, str(value))
 
     # Save the modified document
     saveAsFile = f"{CustomerNameEntry.get()} - {PARTY_ACTIVITY} - Party Confirmation.docx"
     templateDocument.save(saveAsFile)
+    print("SUCCESS: Document Saved - ", saveAsFile)
     messagebox.showinfo("Success", f"Document Saved: {saveAsFile}")
 
     # Clear Fields
@@ -271,6 +314,8 @@ def GenerateDocument():
         partyRoom.state(['!selected'])
     for partyFoodRoom in PartyFoodRoomCheckboxes:
         partyFoodRoom.state(['!selected'])
+    DateBookedEntry.delete(0, "end")
+    print("SUCCESS: Fields Cleared")
 
 # Run Application
 CreateApp()
