@@ -48,7 +48,7 @@ def CreateApp():
     global DateBookedEntry, StaffMemberEntry
     # Variables
     WINDOW_TITLE = "Booking Confirmation App"
-    WINDOW_SIZE = "800x600"
+    WINDOW_SIZE = "800x800"
     WINDOW_THEME = "arc"
     WINDOW_ICON = ""
 
@@ -147,7 +147,7 @@ def CreateApp():
     PartyTypeCheckboxes = []
     for partyType in partyTypes:
         partyTypeCheckbox = ttk.Checkbutton(PartyTypeInformationContainer, text=partyType + ": £" + str(partyTypes[partyType]))
-        partyTypeCheckbox.pack(side="left", padx=5, pady=5)
+        partyTypeCheckbox.pack(padx=5, pady=5, anchor="w", side="top")
         PartyTypeCheckboxes.append(partyTypeCheckbox)
     # Party Room - Container
     PartyRoomInformationContainer = ttk.LabelFrame(PartyInformationContainer, text="Party Room")
@@ -204,12 +204,45 @@ def GenerateDocument():
     global PartyDateEntry, PartyStartTimeEntry, PartyEndTimeEntry, PartyTypeCheckboxes, PartyRoomCheckboxes, PartyFoodRoomCheckboxes
     global DateBookedEntry, StaffMemberEntry
     global templateDocument
+    if CustomerNameEntry.get() == "":
+        messagebox.showerror("Error", "Customer Name: Missing!")
+        return
+    if CustomerEmailEntry.get() == "":
+        messagebox.showerror("Error", "Customer Email: Missing!")
+        return
+    if CustomerPhoneEntry.get() == "":
+        messagebox.showerror("Error", "Customer Contact Number: Missing!")
+        return
+    if ChildNameEntry.get() == "":
+        messagebox.showerror("Error", "Child Name: Missing!")
+        return
+    if PartyDateEntry.get() == "":
+        messagebox.showerror("Error", "Party Date: Missing!")
+        return
+    if PartyStartTimeEntry.get() == "":
+        messagebox.showerror("Error", "Party Start Time: Missing!")
+        return
+    if PartyEndTimeEntry.get() == "":
+        messagebox.showerror("Error", "Party End Time: Missing!")
+        return
+    if partyTypes == []:
+        messagebox.showerror("Error", "Party Type: Missing!")
+        return
+    if activityRooms == []:
+        messagebox.showerror("Error", "Party Room: Missing!")
+        return
+    if foodRooms == []:
+        messagebox.showerror("Error", "Party Food Room: Missing!")
+        return
+    if DateBookedEntry.get() == "":
+        messagebox.showerror("Error", "Date Booked: Missing!")
+        return
     PARTY_TYPE = []
     for partyType in PartyTypeCheckboxes:
         if partyType.instate(['selected']):
             PARTY_TYPE.append(partyType.cget("text"))
             PARTY_TYPE = PARTY_TYPE[0].split(":")
-            PARTY_ACTIVITY = PARTY_TYPE[0]
+            PARTY_ACTIVITY = PARTY_TYPE[0].split("-")[0].strip()
             PARTY_COST = PARTY_TYPE[1].replace("£", "")
     PARTY_ROOM = []
     for partyRoom in PartyRoomCheckboxes:
@@ -223,12 +256,12 @@ def GenerateDocument():
             PARTY_FOOD_ROOM = PARTY_FOOD_ROOM[0]
 
     CUSTOMER_INFORMATION = {
-        "CUSTOMER_NAME": CustomerNameEntry.get(),
+        "CUSTOMER_NAME": CustomerNameEntry.get().split(" ")[0].capitalize() + " " + CustomerNameEntry.get().split(" ")[1].capitalize(),
         "CUSTOMER_EMAIL": CustomerEmailEntry.get(),
         "CUSTOMER_NUMBER": CustomerPhoneEntry.get()
     }
     CHILD_INFORMATION = {
-        "CHILD_NAME": ChildNameEntry.get(),
+        "CHILD_NAME": ChildNameEntry.get().capitalize(),
         "CHILD_AGE": ChildAgeEntry.get()
     }
     PARTY_INFORMATION = {
@@ -241,7 +274,7 @@ def GenerateDocument():
         "PARTY_FOOD_ROOM": PARTY_FOOD_ROOM
     }
     ADMIN_INFORMATION = {
-        "CUSTOMER_FIRST_NAME": CustomerNameEntry.get().split(" ")[0],
+        "CUSTOMER_FIRST_NAME": CustomerNameEntry.get().split(" ")[0].capitalize(),
         "DATE_BOOKED": DateBookedEntry.get(),
         "STAFF_MEMBER": StaffMemberEntry.get()
     }
@@ -294,7 +327,7 @@ def GenerateDocument():
                             paragraph.text = paragraph.text.replace(key, str(value))
 
     # Save the modified document
-    saveAsFile = f"{CustomerNameEntry.get()} - {PARTY_ACTIVITY} - Party Confirmation.docx"
+    saveAsFile = f"{CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_ACTIVITY} - Party Confirmation.docx"
     templateDocument.save(saveAsFile)
     print("SUCCESS: Document Saved - ", saveAsFile)
     messagebox.showinfo("Success", f"Document Saved: {saveAsFile}")
