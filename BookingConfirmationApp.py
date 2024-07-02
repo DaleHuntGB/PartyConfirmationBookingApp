@@ -1,12 +1,12 @@
-# Imports
-import tkinter as tk
-from tkinter import ttk, simpledialog, messagebox, filedialog
-import ttkthemes, os, sys, json, datetime
-from datetime import datetime
+import sys
+import json
+from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QFrame, QGridLayout, QPushButton, QMenuBar, QAction, QMainWindow, QMenu
 from docx import Document
 
 # Import JSON Data
 JSON_FILE = "BookingData.json"
+
 def Load_JSON():
     try:
         with open(JSON_FILE, "r") as file:
@@ -16,7 +16,8 @@ def Load_JSON():
     except:
         print("ERROR: Unable To Load JSON Data")
         return None
-appData = Load_JSON()   
+
+appData = Load_JSON()
 
 # JSON Data
 siteName = appData["SITE_NAME"]
@@ -25,332 +26,358 @@ activityRooms = appData["ACTIVITY_ROOMS"]
 foodRooms = appData["FOOD_ROOMS"]
 partyTypes = appData["PARTY_TYPES"]
 
-# Global Variables
-CustomerNameEntry = None,
-CustomerEmailEntry = None,
-CustomerPhoneEntry = None,
-ChildNameEntry = None,
-ChildAgeEntry = None,
-PartyDateEntry = None,
-PartyStartTimeEntry = None,
-PartyEndTimeEntry = None,
-PartyTypeCheckboxes = [],
-PartyRoomCheckboxes = [],
-PartyFoodRoomCheckboxes = [],
-DateBookedEntry = None,
-StaffMemberEntry = None
-# Create Application Window
+class BookingConfirmationApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-def CreateApp():
-    global CustomerNameEntry, CustomerEmailEntry, CustomerPhoneEntry
-    global ChildNameEntry, ChildAgeEntry
-    global PartyDateEntry, PartyStartTimeEntry, PartyEndTimeEntry, PartyTypeCheckboxes, PartyRoomCheckboxes, PartyFoodRoomCheckboxes
-    global DateBookedEntry, StaffMemberEntry
-    # Variables
-    WINDOW_TITLE = "Booking Confirmation App"
-    WINDOW_SIZE = "800x800"
-    WINDOW_THEME = "arc"
-    WINDOW_ICON = ""
+        self.setWindowTitle("Booking Confirmation App")
+        self.setGeometry(100, 100, 800, 800)
 
-    # Application Window
-    AppWindow = tk.Tk()
-    AppWindow.title(WINDOW_TITLE)
-    AppWindow.geometry(WINDOW_SIZE)
-    AppWindow.resizable(False, False)
+        self.initUI()
 
-    # Application Theme
-    AppStyle = ttkthemes.ThemedStyle(AppWindow)
-    AppStyle.set_theme(WINDOW_THEME)
+    def initUI(self):
+        # Menu Bar
+        self.menuBar = self.menuBar()
+        self.createMenu()
 
-    # Window Check
-    if AppWindow:
-        print("SUCCESS: Application Created")
-    else:
-        print("ERROR: Unable To Create Application")
-        return None
-    
-    ## ## ## ## ## ## ## ## 
-    # CUSTOMER INFORMATION
-    ## ## ## ## ## ## ## ##
-    
-    # Container
-    CustomerInformationContainer = ttk.LabelFrame(AppWindow, text="Customer Information")
-    CustomerInformationContainer.pack(padx=0, pady=0, fill="x", side="top", anchor="n")
-    # Input Field - Customer Name
-    CustomerNameLabel = ttk.Label(CustomerInformationContainer, text="Name:")
-    CustomerNameLabel.grid(row=0, column=0, padx=5, pady=5)
-    CustomerNameEntry = ttk.Entry(CustomerInformationContainer)
-    CustomerNameEntry.grid(row=0, column=1, padx=5, pady=5)
-    # Input Field - Customer Email
-    CustomerEmailLabel = ttk.Label(CustomerInformationContainer, text="Email:")
-    CustomerEmailLabel.grid(row=0, column=2, padx=5, pady=5)
-    CustomerEmailEntry = ttk.Entry(CustomerInformationContainer)
-    CustomerEmailEntry.grid(row=0, column=3, padx=5, pady=5)
-    # Input Field - Customer Phone
-    CustomerPhoneLabel = ttk.Label(CustomerInformationContainer, text="Phone:")
-    CustomerPhoneLabel.grid(row=0, column=4, padx=5, pady=5)
-    CustomerPhoneEntry = ttk.Entry(CustomerInformationContainer)
-    CustomerPhoneEntry.grid(row=0, column=5, padx=5, pady=5)
-    print("SUCCESS: Customer Information Container Created")
+        # Main layout
+        self.mainLayout = QVBoxLayout()
 
-    ## ## ## ## ## ## ## ##
-    # Child Information
-    ## ## ## ## ## ## ## ##
+        # Customer Information
+        self.createCustomerInformation()
 
-    # Container
-    ChildInformationContainer = ttk.LabelFrame(AppWindow, text="Child Information")
-    ChildInformationContainer.pack(padx=0, pady=0, fill="x", after=CustomerInformationContainer)
-    # Input Field - Child Name
-    ChildNameLabel = ttk.Label(ChildInformationContainer, text="Name:")
-    ChildNameLabel.grid(row=0, column=0, padx=5, pady=5)
-    ChildNameEntry = ttk.Entry(ChildInformationContainer)
-    ChildNameEntry.grid(row=0, column=1, padx=5, pady=5)
-    # Input Field - Child Age
-    ChildAgeLabel = ttk.Label(ChildInformationContainer, text="Age:")
-    ChildAgeLabel.grid(row=0, column=2, padx=5, pady=5)
-    ChildAgeEntry = ttk.Entry(ChildInformationContainer)
-    ChildAgeEntry.grid(row=0, column=3, padx=5, pady=5)
-    print("SUCCESS: Child Information Container Created")
+        # Child Information
+        self.createChildInformation()
 
-    ## ## ## ## ## ## ## ##
-    # Party Information
-    ## ## ## ## ## ## ## ##
+        # Party Information
+        self.createPartyInformation()
 
-    # Container
-    PartyInformationContainer = ttk.LabelFrame(AppWindow, text="Party Information")
-    PartyInformationContainer.pack(padx=0, pady=0, fill="x", after=ChildInformationContainer)
-    # Party Time & Date Container
-    PartyDateTimeContainer = ttk.LabelFrame(PartyInformationContainer, text="Party Date & Time")
-    PartyDateTimeContainer.pack(padx=0, pady=5, fill="x", side="top", anchor="n")
-    # Party Date - Label
-    PartyDateLabel = ttk.Label(PartyDateTimeContainer, text="Date:")
-    PartyDateLabel.grid(row=0, column=0, padx=5, pady=5)
-    # Party Date - Entry
-    PartyDateEntry = ttk.Entry(PartyDateTimeContainer)
-    PartyDateEntry.grid(row=0, column=1, padx=5, pady=5)
-    # Party Start Time - Label
-    PartyStartTimeLabel = ttk.Label(PartyDateTimeContainer, text="Start Time:")
-    PartyStartTimeLabel.grid(row=0, column=2, padx=5, pady=5)
-    # Party Start Time - Entry
-    PartyStartTimeEntry = ttk.Entry(PartyDateTimeContainer)
-    PartyStartTimeEntry.grid(row=0, column=3, padx=5, pady=5)
-    # Party End Time - Label
-    PartyEndTimeLabel = ttk.Label(PartyDateTimeContainer, text="End Time:")
-    PartyEndTimeLabel.grid(row=0, column=4, padx=5, pady=5)
-    # Party End Time - Entry
-    PartyEndTimeEntry = ttk.Entry(PartyDateTimeContainer)
-    PartyEndTimeEntry.grid(row=0, column=5, padx=5, pady=5)
-    # Party Type - Container
-    PartyTypeInformationContainer = ttk.LabelFrame(PartyInformationContainer, text="Party Type")
-    PartyTypeInformationContainer.pack(padx=5, pady=5, fill="x", side="top", anchor="n")
-    # Party Type - Checkboxes
-    PartyTypeCheckboxes = []
-    for partyType in partyTypes:
-        partyTypeCheckbox = ttk.Checkbutton(PartyTypeInformationContainer, text=partyType + ": £" + str(partyTypes[partyType]))
-        partyTypeCheckbox.pack(padx=5, pady=5, anchor="w", side="top")
-        PartyTypeCheckboxes.append(partyTypeCheckbox)
-    # Party Room - Container
-    PartyRoomInformationContainer = ttk.LabelFrame(PartyInformationContainer, text="Party Room")
-    PartyRoomInformationContainer.pack(padx=5, pady=5, fill="x", side="top", anchor="n")
-    # Party Room - Checkboxes
-    PartyRoomCheckboxes = []
-    for partyRoom in activityRooms:
-        partyRoomCheckbox = ttk.Checkbutton(PartyRoomInformationContainer, text=partyRoom)
-        partyRoomCheckbox.pack(side="left", padx=5, pady=5)
-        PartyRoomCheckboxes.append(partyRoomCheckbox)
-    # Party Food - Container
-    PartyFoodRoomInformationContainer = ttk.LabelFrame(PartyInformationContainer, text="Party Food Room")
-    PartyFoodRoomInformationContainer.pack(padx=5, pady=5, fill="x", side="top", anchor="n")
-    # Party FoodRoom - Checkboxes
-    PartyFoodRoomCheckboxes = []
-    for partyFood in foodRooms:
-        partyFoodRoomCheckbox = ttk.Checkbutton(PartyFoodRoomInformationContainer, text=partyFood)
-        partyFoodRoomCheckbox.pack(side="left", padx=5, pady=5)
-        PartyFoodRoomCheckboxes.append(partyFoodRoomCheckbox)
-    print("SUCCESS: Party Information Container Created")
+        # Admin Information
+        self.createAdminInformation()
 
-    ## ## ## ## ## ## ## ##
-    # Admin
-    ## ## ## ## ## ## ## ##
+        # Generate Document Button
+        self.generateButton = QPushButton("Generate Confirmation")
+        self.generateButton.clicked.connect(self.GenerateDocument)
+        self.mainLayout.addWidget(self.generateButton)
 
-    # Container
-    AdminContainer = ttk.LabelFrame(AppWindow, text="Admin")
-    AdminContainer.pack(padx=0, pady=0, fill="x", after=PartyInformationContainer)
-    # Date Booked - Label
-    DateBookedLabel = ttk.Label(AdminContainer, text="Date Booked:")
-    DateBookedLabel.grid(row=0, column=0, padx=5, pady=5)
-    # Date Booked - Entry
-    DateBookedEntry = ttk.Entry(AdminContainer)
-    DateBookedEntry.grid(row=0, column=1, padx=5, pady=5)
-    # Staff Member - Label
-    StaffMemberLabel = ttk.Label(AdminContainer, text="Staff Member:")
-    StaffMemberLabel.grid(row=0, column=2, padx=5, pady=5)
-    # Staff Member - Entry
-    StaffMemberEntry = ttk.Entry(AdminContainer)
-    StaffMemberEntry.grid(row=0, column=3, padx=5, pady=5)
+        # Set central widget
+        centralWidget = QtWidgets.QWidget()
+        centralWidget.setLayout(self.mainLayout)
+        self.setCentralWidget(centralWidget)
 
-    ## ## ## ## ## ## ## ##
-    # Generate Document Button
-    ## ## ## ## ## ## ## ##
-    GenerateDocumentButton = ttk.Button(AppWindow, text="Generate Confirmation", command=GenerateDocument)
-    GenerateDocumentButton.pack(padx=0, pady=0, fill="x", side="top", anchor="n")
+    def createMenu(self):
+        generalMenu = self.menuBar.addMenu("General")
+        updateSiteName = QAction("Update Site Name", self)
+        updateSiteName.triggered.connect(self.UpdateSiteName)
+        generalMenu.addAction(updateSiteName)
 
-    # Loop Until Closed
-    AppWindow.mainloop()
+        updateTemplateDocument = QAction("Update Template Document", self)
+        updateTemplateDocument.triggered.connect(self.UpdateTemplateDocument)
+        generalMenu.addAction(updateTemplateDocument)
 
-def GenerateDocument():
-    global CustomerNameEntry, CustomerEmailEntry, CustomerPhoneEntry
-    global ChildNameEntry, ChildAgeEntry
-    global PartyDateEntry, PartyStartTimeEntry, PartyEndTimeEntry, PartyTypeCheckboxes, PartyRoomCheckboxes, PartyFoodRoomCheckboxes
-    global DateBookedEntry, StaffMemberEntry
-    global templateDocument
-    if CustomerNameEntry.get() == "":
-        messagebox.showerror("Error", "Customer Name: Missing!")
-        return
-    if CustomerEmailEntry.get() == "":
-        messagebox.showerror("Error", "Customer Email: Missing!")
-        return
-    if CustomerPhoneEntry.get() == "":
-        messagebox.showerror("Error", "Customer Contact Number: Missing!")
-        return
-    if ChildNameEntry.get() == "":
-        messagebox.showerror("Error", "Child Name: Missing!")
-        return
-    if PartyDateEntry.get() == "":
-        messagebox.showerror("Error", "Party Date: Missing!")
-        return
-    if PartyStartTimeEntry.get() == "":
-        messagebox.showerror("Error", "Party Start Time: Missing!")
-        return
-    if PartyEndTimeEntry.get() == "":
-        messagebox.showerror("Error", "Party End Time: Missing!")
-        return
-    if not any(partyType.instate(['selected']) for partyType in PartyTypeCheckboxes):
-        messagebox.showerror("Error", "Party Type: Missing!")
-        return
-    if not any(partyRoom.instate(['selected']) for partyRoom in PartyRoomCheckboxes):
-        messagebox.showerror("Error", "Party Room: Missing!")
-        return
-    if not any(partyFoodRoom.instate(['selected']) for partyFoodRoom in PartyFoodRoomCheckboxes):
-        messagebox.showerror("Error", "Party Food Room: Missing!")
-        return
-    if DateBookedEntry.get() == "":
-        messagebox.showerror("Error", "Date Booked: Missing!")
-        return
-    PARTY_TYPE = []
-    for partyType in PartyTypeCheckboxes:
-        if partyType.instate(['selected']):
-            PARTY_TYPE.append(partyType.cget("text"))
-            PARTY_TYPE = PARTY_TYPE[0].split(":")
-            PARTY_ACTIVITY = PARTY_TYPE[0].split("-")[0].strip()
-            PARTY_COST = PARTY_TYPE[1].replace("£", "")
-    PARTY_ROOM = []
-    for partyRoom in PartyRoomCheckboxes:
-        if partyRoom.instate(['selected']):
-            PARTY_ROOM.append(partyRoom.cget("text"))
-            PARTY_ROOM = PARTY_ROOM[0]
-    PARTY_FOOD_ROOM = []
-    for partyFoodRoom in PartyFoodRoomCheckboxes:
-        if partyFoodRoom.instate(['selected']):
-            PARTY_FOOD_ROOM.append(partyFoodRoom.cget("text"))
-            PARTY_FOOD_ROOM = PARTY_FOOD_ROOM[0]
+        generalMenu.addSeparator()
 
-    CUSTOMER_INFORMATION = {
-        "CUSTOMER_NAME": CustomerNameEntry.get().split(" ")[0].capitalize() + " " + CustomerNameEntry.get().split(" ")[1].capitalize(),
-        "CUSTOMER_EMAIL": CustomerEmailEntry.get(),
-        "CUSTOMER_NUMBER": CustomerPhoneEntry.get()
-    }
-    CHILD_INFORMATION = {
-        "CHILD_NAME": ChildNameEntry.get().capitalize(),
-        "CHILD_AGE": ChildAgeEntry.get()
-    }
-    PARTY_INFORMATION = {
-        "PARTY_DATE": PartyDateEntry.get(),
-        "PARTY_START_TIME": PartyStartTimeEntry.get(),
-        "PARTY_END_TIME": PartyEndTimeEntry.get(),
-        "PARTY_TYPE": PARTY_ACTIVITY,
-        "PARTY_COST": PARTY_COST,
-        "PARTY_ROOM": PARTY_ROOM,
-        "PARTY_FOOD_ROOM": PARTY_FOOD_ROOM
-    }
-    ADMIN_INFORMATION = {
-        "CUSTOMER_FIRST_NAME": CustomerNameEntry.get().split(" ")[0].capitalize(),
-        "DATE_BOOKED": DateBookedEntry.get(),
-        "STAFF_MEMBER": StaffMemberEntry.get()
-    }
-    templateDocument = Document(templateDocument)
+        exitApp = QAction("Exit", self)
+        exitApp.triggered.connect(self.close)
+        generalMenu.addAction(exitApp)
 
-    for paragraph in templateDocument.paragraphs:
-        for key, value in CUSTOMER_INFORMATION.items():
-            if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(key, value)
-        for key, value in PARTY_INFORMATION.items():
-            if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(key, str(value))
-        for key, value in CHILD_INFORMATION.items():
-            if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(key, str(value))
-        for key, value in ADMIN_INFORMATION.items():
-            if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(key, str(value))
+        venueMenu = self.menuBar.addMenu("Venue")
+        updateActivityRooms = QAction("Update Activity Rooms", self)
+        updateActivityRooms.triggered.connect(self.UpdateActivityRooms)
+        venueMenu.addAction(updateActivityRooms)
 
-    # Check Tables
-    for table in templateDocument.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for key, value in CUSTOMER_INFORMATION.items():
-                    if key in cell.text:
-                        cell.text = cell.text.replace(key, value)
-                for key, value in PARTY_INFORMATION.items():
-                    if key in cell.text:
-                        cell.text = cell.text.replace(key, str(value))
-                for key, value in CHILD_INFORMATION.items():
-                    if key in cell.text:
-                        cell.text = cell.text.replace(key, str(value))
-                for key, value in ADMIN_INFORMATION.items():
-                    if key in cell.text:
-                        cell.text = cell.text.replace(key, str(value))
+        updateFoodRooms = QAction("Update Food Rooms", self)
+        updateFoodRooms.triggered.connect(self.UpdateFoodRooms)
+        venueMenu.addAction(updateFoodRooms)
 
-    # Check Table Columns and Row Cells
-    for table in templateDocument.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
+        updatePartyTypes = QAction("Update Party Types", self)
+        updatePartyTypes.triggered.connect(self.UpdatePartyTypes)
+        venueMenu.addAction(updatePartyTypes)
+
+    def createCustomerInformation(self):
+        customerInfoContainer = QFrame()
+        customerInfoLayout = QGridLayout()
+        customerInfoContainer.setLayout(customerInfoLayout)
+
+        customerInfoContainer.setFrameShape(QFrame.StyledPanel)
+        customerInfoContainer.setFrameShadow(QFrame.Raised)
+
+        customerInfoContainer.setTitle = QLabel("Customer Information")
+        customerInfoLayout.addWidget(customerInfoContainer.setTitle, 0, 0, 1, 2)
+
+        self.CustomerNameEntry = QLineEdit()
+        self.CustomerEmailEntry = QLineEdit()
+        self.CustomerPhoneEntry = QLineEdit()
+
+        customerInfoLayout.addWidget(QLabel("Name:"), 1, 0)
+        customerInfoLayout.addWidget(self.CustomerNameEntry, 1, 1)
+
+        customerInfoLayout.addWidget(QLabel("Email:"), 1, 2)
+        customerInfoLayout.addWidget(self.CustomerEmailEntry, 1, 3)
+
+        customerInfoLayout.addWidget(QLabel("Phone:"), 1, 4)
+        customerInfoLayout.addWidget(self.CustomerPhoneEntry, 1, 5)
+
+        self.mainLayout.addWidget(customerInfoContainer)
+
+    def createChildInformation(self):
+        childInfoContainer = QFrame()
+        childInfoLayout = QGridLayout()
+        childInfoContainer.setLayout(childInfoLayout)
+
+        childInfoContainer.setFrameShape(QFrame.StyledPanel)
+        childInfoContainer.setFrameShadow(QFrame.Raised)
+
+        childInfoContainer.setTitle = QLabel("Child Information")
+        childInfoLayout.addWidget(childInfoContainer.setTitle, 0, 0, 1, 2)
+
+        self.ChildNameEntry = QLineEdit()
+        self.ChildAgeEntry = QLineEdit()
+
+        childInfoLayout.addWidget(QLabel("Name:"), 1, 0)
+        childInfoLayout.addWidget(self.ChildNameEntry, 1, 1)
+
+        childInfoLayout.addWidget(QLabel("Age:"), 1, 2)
+        childInfoLayout.addWidget(self.ChildAgeEntry, 1, 3)
+
+        self.mainLayout.addWidget(childInfoContainer)
+
+    def createPartyInformation(self):
+        partyInfoContainer = QFrame()
+        partyInfoLayout = QVBoxLayout()
+        partyInfoContainer.setLayout(partyInfoLayout)
+
+        partyInfoContainer.setFrameShape(QFrame.StyledPanel)
+        partyInfoContainer.setFrameShadow(QFrame.Raised)
+
+        partyInfoContainer.setTitle = QLabel("Party Information")
+        partyInfoLayout.addWidget(partyInfoContainer.setTitle)
+
+        partyDateTimeContainer = QFrame()
+        partyDateTimeLayout = QGridLayout()
+        partyDateTimeContainer.setLayout(partyDateTimeLayout)
+
+        self.PartyDateEntry = QLineEdit()
+        self.PartyStartTimeEntry = QLineEdit()
+        self.PartyEndTimeEntry = QLineEdit()
+
+        partyDateTimeLayout.addWidget(QLabel("Date:"), 0, 0)
+        partyDateTimeLayout.addWidget(self.PartyDateEntry, 0, 1)
+
+        partyDateTimeLayout.addWidget(QLabel("Start Time:"), 0, 2)
+        partyDateTimeLayout.addWidget(self.PartyStartTimeEntry, 0, 3)
+
+        partyDateTimeLayout.addWidget(QLabel("End Time:"), 0, 4)
+        partyDateTimeLayout.addWidget(self.PartyEndTimeEntry, 0, 5)
+
+        partyInfoLayout.addWidget(partyDateTimeContainer)
+
+        partyTypeContainer = QFrame()
+        partyTypeLayout = QVBoxLayout()
+        partyTypeContainer.setLayout(partyTypeLayout)
+
+        partyTypeContainer.setTitle = QLabel("Party Type")
+        partyTypeLayout.addWidget(partyTypeContainer.setTitle)
+
+        self.PartyTypeCheckboxes = []
+        for partyType, cost in partyTypes.items():
+            partyTypeCheckbox = QCheckBox(f"{partyType}: £{cost}")
+            partyTypeLayout.addWidget(partyTypeCheckbox)
+            self.PartyTypeCheckboxes.append(partyTypeCheckbox)
+
+        partyInfoLayout.addWidget(partyTypeContainer)
+
+        partyRoomContainer = QFrame()
+        partyRoomLayout = QHBoxLayout()
+        partyRoomContainer.setLayout(partyRoomLayout)
+
+        partyRoomContainer.setTitle = QLabel("Party Room")
+        partyRoomLayout.addWidget(partyRoomContainer.setTitle)
+
+        self.PartyRoomCheckboxes = []
+        for room in activityRooms:
+            partyRoomCheckbox = QCheckBox(room)
+            partyRoomLayout.addWidget(partyRoomCheckbox)
+            self.PartyRoomCheckboxes.append(partyRoomCheckbox)
+
+        partyInfoLayout.addWidget(partyRoomContainer)
+
+        partyFoodRoomContainer = QFrame()
+        partyFoodRoomLayout = QHBoxLayout()
+        partyFoodRoomContainer.setLayout(partyFoodRoomLayout)
+
+        partyFoodRoomContainer.setTitle = QLabel("Party Food Room")
+        partyFoodRoomLayout.addWidget(partyFoodRoomContainer.setTitle)
+
+        self.PartyFoodRoomCheckboxes = []
+        for foodRoom in foodRooms:
+            partyFoodRoomCheckbox = QCheckBox(foodRoom)
+            partyFoodRoomLayout.addWidget(partyFoodRoomCheckbox)
+            self.PartyFoodRoomCheckboxes.append(partyFoodRoomCheckbox)
+
+        partyInfoLayout.addWidget(partyFoodRoomContainer)
+
+        self.mainLayout.addWidget(partyInfoContainer)
+
+    def createAdminInformation(self):
+        adminContainer = QFrame()
+        adminLayout = QGridLayout()
+        adminContainer.setLayout(adminLayout)
+
+        adminContainer.setFrameShape(QFrame.StyledPanel)
+        adminContainer.setFrameShadow(QFrame.Raised)
+
+        adminContainer.setTitle = QLabel("Admin")
+        adminLayout.addWidget(adminContainer.setTitle, 0, 0, 1, 2)
+
+        self.DateBookedEntry = QLineEdit()
+        self.StaffMemberEntry = QLineEdit()
+
+        adminLayout.addWidget(QLabel("Date Booked:"), 1, 0)
+        adminLayout.addWidget(self.DateBookedEntry, 1, 1)
+
+        adminLayout.addWidget(QLabel("Staff Member:"), 1, 2)
+        adminLayout.addWidget(self.StaffMemberEntry, 1, 3)
+
+        self.mainLayout.addWidget(adminContainer)
+
+    def GenerateDocument(self):
+        if self.CustomerNameEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Customer Name: Missing!")
+            return
+        if self.CustomerEmailEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Customer Email: Missing!")
+            return
+        if self.CustomerPhoneEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Customer Contact Number: Missing!")
+            return
+        if self.ChildNameEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Child Name: Missing!")
+            return
+        if self.PartyDateEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Party Date: Missing!")
+            return
+        if self.PartyStartTimeEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Party Start Time: Missing!")
+            return
+        if self.PartyEndTimeEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Party End Time: Missing!")
+            return
+        if not any(cb.isChecked() for cb in self.PartyTypeCheckboxes):
+            QMessageBox.critical(self, "Error", "Party Type: Missing!")
+            return
+        if not any(cb.isChecked() for cb in self.PartyRoomCheckboxes):
+            QMessageBox.critical(self, "Error", "Party Room: Missing!")
+            return
+        if not any(cb.isChecked() for cb in self.PartyFoodRoomCheckboxes):
+            QMessageBox.critical(self, "Error", "Party Food Room: Missing!")
+            return
+        if self.DateBookedEntry.text() == "":
+            QMessageBox.critical(self, "Error", "Date Booked: Missing!")
+            return
+
+        PARTY_TYPE = [cb.text() for cb in self.PartyTypeCheckboxes if cb.isChecked()][0]
+        PARTY_ACTIVITY, PARTY_COST = PARTY_TYPE.split(": £")
+
+        PARTY_ROOM = [cb.text() for cb in self.PartyRoomCheckboxes if cb.isChecked()][0]
+        PARTY_FOOD_ROOM = [cb.text() for cb in self.PartyFoodRoomCheckboxes if cb.isChecked()][0]
+
+        CUSTOMER_INFORMATION = {
+            "CUSTOMER_NAME": self.CustomerNameEntry.text(),
+            "CUSTOMER_EMAIL": self.CustomerEmailEntry.text(),
+            "CUSTOMER_NUMBER": self.CustomerPhoneEntry.text()
+        }
+        CHILD_INFORMATION = {
+            "CHILD_NAME": self.ChildNameEntry.text(),
+            "CHILD_AGE": self.ChildAgeEntry.text()
+        }
+        PARTY_INFORMATION = {
+            "PARTY_DATE": self.PartyDateEntry.text(),
+            "PARTY_START_TIME": self.PartyStartTimeEntry.text(),
+            "PARTY_END_TIME": self.PartyEndTimeEntry.text(),
+            "PARTY_TYPE": PARTY_ACTIVITY,
+            "PARTY_COST": PARTY_COST,
+            "PARTY_ROOM": PARTY_ROOM,
+            "PARTY_FOOD_ROOM": PARTY_FOOD_ROOM
+        }
+        ADMIN_INFORMATION = {
+            "CUSTOMER_FIRST_NAME": self.CustomerNameEntry.text().split(" ")[0],
+            "DATE_BOOKED": self.DateBookedEntry.text(),
+            "STAFF_MEMBER": self.StaffMemberEntry.text()
+        }
+
+        doc = Document(templateDocument)
+
+        for paragraph in doc.paragraphs:
+            for key, value in CUSTOMER_INFORMATION.items():
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, value)
+            for key, value in PARTY_INFORMATION.items():
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, str(value))
+            for key, value in CHILD_INFORMATION.items():
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, str(value))
+            for key, value in ADMIN_INFORMATION.items():
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, str(value))
+
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for key, value in CUSTOMER_INFORMATION.items():
+                        if key in cell.text:
+                            cell.text = cell.text.replace(key, value)
                     for key, value in PARTY_INFORMATION.items():
-                        if key in paragraph.text:
-                            paragraph.text = paragraph.text.replace(key, str(value))
+                        if key in cell.text:
+                            cell.text = cell.text.replace(key, str(value))
                     for key, value in CHILD_INFORMATION.items():
-                        if key in paragraph.text:
-                            paragraph.text = paragraph.text.replace(key, str(value))
+                        if key in cell.text:
+                            cell.text = cell.text.replace(key, str(value))
                     for key, value in ADMIN_INFORMATION.items():
-                        if key in paragraph.text:
-                            paragraph.text = paragraph.text.replace(key, str(value))
+                        if key in cell.text:
+                            cell.text = cell.text.replace(key, str(value))
 
-    # Save the modified document
-    saveAsFile = f"{CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_ACTIVITY} - Party Confirmation.docx"
-    templateDocument.save(saveAsFile)
-    print("SUCCESS: Document Saved - ", saveAsFile)
-    messagebox.showinfo("Success", f"Document Saved: {saveAsFile}")
+        saveAsFile = f"{CUSTOMER_INFORMATION['CUSTOMER_NAME']} - {PARTY_ACTIVITY} - Party Confirmation.docx"
+        doc.save(saveAsFile)
+        print("SUCCESS: Document Saved - ", saveAsFile)
+        QMessageBox.information(self, "Success", f"Document Saved: {saveAsFile}")
 
-    # Clear Fields
-    CustomerNameEntry.delete(0, "end")
-    CustomerEmailEntry.delete(0, "end")
-    CustomerPhoneEntry.delete(0, "end")
-    ChildNameEntry.delete(0, "end")
-    ChildAgeEntry.delete(0, "end")
-    PartyDateEntry.delete(0, "end")
-    PartyStartTimeEntry.delete(0, "end")
-    PartyEndTimeEntry.delete(0, "end")
-    for partyType in PartyTypeCheckboxes:
-        partyType.state(['!selected'])
-    for partyRoom in PartyRoomCheckboxes:
-        partyRoom.state(['!selected'])
-    for partyFoodRoom in PartyFoodRoomCheckboxes:
-        partyFoodRoom.state(['!selected'])
-    DateBookedEntry.delete(0, "end")
-    print("SUCCESS: Fields Cleared")
+        # Clear Fields
+        self.CustomerNameEntry.clear()
+        self.CustomerEmailEntry.clear()
+        self.CustomerPhoneEntry.clear()
+        self.ChildNameEntry.clear()
+        self.ChildAgeEntry.clear()
+        self.PartyDateEntry.clear()
+        self.PartyStartTimeEntry.clear()
+        self.PartyEndTimeEntry.clear()
+        for cb in self.PartyTypeCheckboxes:
+            cb.setChecked(False)
+        for cb in self.PartyRoomCheckboxes:
+            cb.setChecked(False)
+        for cb in self.PartyFoodRoomCheckboxes:
+            cb.setChecked(False)
+        self.DateBookedEntry.clear()
 
-# Run Application
-CreateApp()
+    def UpdateTemplateDocument(self):
+        print("SUCCESS: Update Template Document")
 
-    
+    def UpdateActivityRooms(self):
+        print("SUCCESS: Update Activity Rooms")
+
+    def UpdateFoodRooms(self):
+        print("SUCCESS: Update Food Rooms")
+
+    def UpdatePartyTypes(self):
+        print("SUCCESS: Update Party Types")
+
+    def UpdateSiteName(self):
+        print("SUCCESS: Update Site Name")
+
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    window = BookingConfirmationApp()
+    window.show()
+    sys.exit(app.exec_())
