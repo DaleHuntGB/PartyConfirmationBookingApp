@@ -1,7 +1,7 @@
 import sys
 import json
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QMessageBox, QFileDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QFrame, QGridLayout, QPushButton, QMenuBar, QAction, QMainWindow, QMenu
+from PyQt5.QtWidgets import QMessageBox, QDialog, QTableWidget ,QFileDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QFrame, QGridLayout, QPushButton, QMenuBar, QAction, QMainWindow, QMenu, QAbstractItemView, QTableWidgetItem, QInputDialog
 from docx import Document
 
 # Import JSON Data
@@ -30,7 +30,7 @@ class BookingConfirmationApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Booking Confirmation App")
+        self.setWindowTitle(f"{siteName} - Booking Confirmation Generator")
         self.setGeometry(100, 100, 800, 800)
 
         self.initUI()
@@ -370,10 +370,74 @@ class BookingConfirmationApp(QMainWindow):
         print("SUCCESS: Update Food Rooms")
 
     def UpdatePartyTypes(self):
-        print("SUCCESS: Update Party Types")
+        partyTypesDialog = QDialog(self)
+        partyTypesDialog.setWindowTitle("Update Party Types")
+        partyTypesLayout = QVBoxLayout(partyTypesDialog)
+        
+        # Create a table to display party types and prices
+        partyTypesTable = QTableWidget()
+        partyTypesTable.setColumnCount(2)
+        partyTypesTable.setHorizontalHeaderLabels(["Party Type", "Party Price"])
+        partyTypesTable.setEditTriggers(QAbstractItemView.DoubleClicked)
+
+        # Set Row Length
+        partyTypesTable.setRowCount(len(partyTypes))
+        
+        # Populate the table with existing party types and prices
+        for row, (partyType, partyPrice) in enumerate(partyTypes.items()):
+            partyTypeItem = QTableWidgetItem(partyType)
+            partyPriceItem = QTableWidgetItem(str(partyPrice))
+            partyTypesTable.setItem(row, 0, partyTypeItem)
+            partyTypesTable.setItem(row, 1, partyPriceItem)
+        
+        # Add the table to the layout
+        partyTypesLayout.addWidget(partyTypesTable)
+
+        partyTypesTable.resizeColumnsToContents()
+        
+        # Add buttons for adding and saving party types
+        addButton = QPushButton("Add")
+        saveButton = QPushButton("Save")
+        partyTypesLayout.addWidget(addButton)
+        partyTypesLayout.addWidget(saveButton)
+        
+        # Connect the add button to a function for adding party types
+        def addPartyType():
+            newRow = partyTypesTable.rowCount()
+            partyType, ok = QInputDialog.getText(self, "Add Party Type", "Party Type:")
+            if ok:
+                partyPrice, ok = QInputDialog.getText(self, "Add Party Price", "Party Price:")
+                if ok and partyType and partyPrice:
+                    partyTypesTable.insertRow(newRow)
+                    partyTypesTable.setItem(newRow, 0, QTableWidgetItem(partyType))
+                    partyTypesTable.setItem(newRow, 1, QTableWidgetItem(partyPrice))
+        
+        def saveParties():
+            newPartyTypes = {}
+            for row in range(partyTypesTable.rowCount()):
+                partyType = partyTypesTable.item(row, 0).text()
+                partyPrice = partyTypesTable.item(row, 1).text()
+                newPartyTypes[partyType] = partyPrice
+            appData["PARTY_TYPES"] = newPartyTypes
+            with open(JSON_FILE, "w") as jsonFile:
+                json.dump(appData, jsonFile)
+            print("SUCCESS: Party Types Updated")
+            partyTypesDialog.close()
+        
+        addButton.clicked.connect(addPartyType)
+        saveButton.clicked.connect(saveParties)
+        
+        # Show the dialog
+        partyTypesDialog.exec_()
+
 
     def UpdateSiteName(self):
-        print("SUCCESS: Update Site Name")
+        siteName, ok = QtWidgets.QInputDialog.getText(self, "Update Site Name", "New Site Name:")
+        if ok:
+            appData["SITE_NAME"] = siteName
+            with open(JSON_FILE, "w") as jsonFile:
+                json.dump(appData, jsonFile)
+            print("SUCCESS: Site Name Updated -", siteName)
 
 
 if __name__ == "__main__":
