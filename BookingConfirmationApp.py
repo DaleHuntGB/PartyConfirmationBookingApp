@@ -53,21 +53,6 @@ class BookingConfirmationApp(QMainWindow):
         self.setCentralWidget(centralWidget)
 
     def createMenu(self):
-        generalMenu = self.menuBar.addMenu("General")
-        updateSiteName = QAction("Update Site Name", self)
-        updateSiteName.triggered.connect(self.UpdateSiteName)
-        generalMenu.addAction(updateSiteName)
-
-        updateTemplateDocument = QAction("Update Template Document", self)
-        updateTemplateDocument.triggered.connect(self.UpdateTemplateDocument)
-        generalMenu.addAction(updateTemplateDocument)
-
-        generalMenu.addSeparator()
-
-        exitApp = QAction("Exit", self)
-        exitApp.triggered.connect(self.close)
-        generalMenu.addAction(exitApp)
-
         venueMenu = self.menuBar.addMenu("Venue")
         updateActivityRooms = QAction("Update Activity Rooms", self)
         updateActivityRooms.triggered.connect(self.UpdateActivityRooms)
@@ -409,7 +394,59 @@ class BookingConfirmationApp(QMainWindow):
 
 
     def UpdateFoodRooms(self):
-        print("SUCCESS: Update Food Rooms")
+        foodRoomsDialog = QDialog(self)
+        foodRoomsDialog.setWindowTitle("Update Food Rooms")
+        foodRoomsLayout = QVBoxLayout(foodRoomsDialog)
+
+        foodRoomsTable = QTableWidget()
+        foodRoomsTable.setColumnCount(1)
+        foodRoomsTable.setHorizontalHeaderLabels(["Food Room"])
+        foodRoomsTable.setEditTriggers(QAbstractItemView.DoubleClicked)
+        foodRoomsTable.setRowCount(len(foodRooms))
+
+        for row, foodRoom in enumerate(foodRooms):
+            foodRoomItem = QTableWidgetItem(foodRoom)
+            foodRoomsTable.setItem(row, 0, foodRoomItem)
+
+        foodRoomsLayout.addWidget(foodRoomsTable)
+        foodRoomsTable.resizeColumnsToContents()
+
+        addButton = QPushButton("Add")
+        deleteButton = QPushButton("Delete")
+        saveButton = QPushButton("Save")
+        foodRoomsLayout.addWidget(addButton)
+        foodRoomsLayout.addWidget(deleteButton)
+        foodRoomsLayout.addWidget(saveButton)
+
+        def addFoodRoom():
+            newRow = foodRoomsTable.rowCount()
+            foodRoom, ok = QInputDialog.getText(self, "Add Food Room", "Food Room:")
+            if ok:
+                foodRoomsTable.insertRow(newRow)
+                foodRoomsTable.setItem(newRow, 0, QTableWidgetItem(foodRoom))
+
+        def deleteFoodRoom():
+            selectedRow = foodRoomsTable.currentRow()
+            if selectedRow != -1:
+                foodRoomsTable.removeRow(selectedRow)
+
+        def saveFoodRooms():
+            newFoodRooms = []
+            for row in range(foodRoomsTable.rowCount()):
+                foodRoom = foodRoomsTable.item(row, 0).text()
+                newFoodRooms.append(foodRoom)
+            appData["FOOD_ROOMS"] = newFoodRooms
+            with open(JSON_FILE, "w") as jsonFile:
+                json.dump(appData, jsonFile)
+            print("SUCCESS: Food Rooms Updated")
+            QMessageBox.information(self, "Success", "Restart Application For Changes To Take Effect")
+            foodRoomsDialog.close()
+
+        addButton.clicked.connect(addFoodRoom)
+        saveButton.clicked.connect(saveFoodRooms)
+        deleteButton.clicked.connect(deleteFoodRoom)
+
+        foodRoomsDialog.exec_()
 
     def UpdatePartyTypes(self):
         partyTypesDialog = QDialog(self)
