@@ -31,36 +31,22 @@ class BookingConfirmationApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle(f"{siteName} - Booking Confirmation Generator")
-        self.setGeometry(100, 100, 800, 800)
-
-        self.initUI()
-
-    def initUI(self):
-        # Menu Bar
+        self.setGeometry(50, 50, 800, 800)
+        
         self.menuBar = self.menuBar()
         self.createMenu()
+        self.initUI()
 
-        # Main layout
+
+    def initUI(self):
         self.mainLayout = QVBoxLayout()
-
-        # Customer Information
         self.createCustomerInformation()
-
-        # Child Information
         self.createChildInformation()
-
-        # Party Information
         self.createPartyInformation()
-
-        # Admin Information
         self.createAdminInformation()
-
-        # Generate Document Button
         self.generateButton = QPushButton("Generate Confirmation")
         self.generateButton.clicked.connect(self.GenerateDocument)
         self.mainLayout.addWidget(self.generateButton)
-
-        # Set central widget
         centralWidget = QtWidgets.QWidget()
         centralWidget.setLayout(self.mainLayout)
         self.setCentralWidget(centralWidget)
@@ -364,7 +350,61 @@ class BookingConfirmationApp(QMainWindow):
         print("SUCCESS: Update Template Document")
 
     def UpdateActivityRooms(self):
-        print("SUCCESS: Update Activity Rooms")
+        activityRoomsDialog = QDialog(self)
+        activityRoomsDialog.setWindowTitle("Update Activity Rooms")
+        activityRoomsLayout = QVBoxLayout(activityRoomsDialog)
+
+        activityRoomsTable = QTableWidget()
+        activityRoomsTable.setColumnCount(1)
+        activityRoomsTable.setHorizontalHeaderLabels(["Activity Room"])
+        activityRoomsTable.setEditTriggers(QAbstractItemView.DoubleClicked)
+        activityRoomsTable.setRowCount(len(activityRooms))
+
+        for row, activityRoom in enumerate(activityRooms):
+            activityRoomItem = QTableWidgetItem(activityRoom)
+            activityRoomsTable.setItem(row, 0, activityRoomItem)
+
+        activityRoomsLayout.addWidget(activityRoomsTable)
+        activityRoomsTable.resizeColumnsToContents()
+
+        addButton = QPushButton("Add")
+        deleteButton = QPushButton("Delete")
+        saveButton = QPushButton("Save")
+        activityRoomsLayout.addWidget(addButton)
+        activityRoomsLayout.addWidget(deleteButton)
+        activityRoomsLayout.addWidget(saveButton)
+
+        def addActivityRoom():
+            newRow = activityRoomsTable.rowCount()
+            activityRoom, ok = QInputDialog.getText(self, "Add Activity Room", "Activity Room:")
+            if ok:
+                activityRoomsTable.insertRow(newRow)
+                activityRoomsTable.setItem(newRow, 0, QTableWidgetItem(activityRoom))
+
+        def deleteActivityRoom():
+            selectedRow = activityRoomsTable.currentRow()
+            if selectedRow != -1:
+                activityRoomsTable.removeRow(selectedRow)
+
+        def saveActivityRooms():
+            newActivityRooms = []
+            for row in range(activityRoomsTable.rowCount()):
+                activityRoom = activityRoomsTable.item(row, 0).text()
+                newActivityRooms.append(activityRoom)
+            appData["ACTIVITY_ROOMS"] = newActivityRooms
+            with open(JSON_FILE, "w") as jsonFile:
+                json.dump(appData, jsonFile)
+            print("SUCCESS: Activity Rooms Updated")
+            QMessageBox.information(self, "Success", "Restart Application For Changes To Take Effect")
+            activityRoomsDialog.close()
+            self.UpdateAppWindow()
+
+        addButton.clicked.connect(addActivityRoom)
+        saveButton.clicked.connect(saveActivityRooms)
+        deleteButton.clicked.connect(deleteActivityRoom)
+
+        activityRoomsDialog.exec_()
+
 
     def UpdateFoodRooms(self):
         print("SUCCESS: Update Food Rooms")
@@ -397,8 +437,10 @@ class BookingConfirmationApp(QMainWindow):
         
         # Add buttons for adding and saving party types
         addButton = QPushButton("Add")
+        deleteButton = QPushButton("Delete")
         saveButton = QPushButton("Save")
         partyTypesLayout.addWidget(addButton)
+        partyTypesLayout.addWidget(deleteButton)
         partyTypesLayout.addWidget(saveButton)
         
         # Connect the add button to a function for adding party types
@@ -422,9 +464,16 @@ class BookingConfirmationApp(QMainWindow):
             with open(JSON_FILE, "w") as jsonFile:
                 json.dump(appData, jsonFile)
             print("SUCCESS: Party Types Updated")
+            QMessageBox.information(self, "Success", "Restart Application For Changes To Take Effect")
             partyTypesDialog.close()
+
+        def deletePartyType():
+            selectedRow = partyTypesTable.currentRow()
+            if selectedRow != -1:
+                partyTypesTable.removeRow(selectedRow)
         
         addButton.clicked.connect(addPartyType)
+        deleteButton.clicked.connect(deletePartyType)
         saveButton.clicked.connect(saveParties)
         
         # Show the dialog
