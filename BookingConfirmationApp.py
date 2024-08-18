@@ -25,6 +25,7 @@ templateDocument = appData["TEMPLATE_DOCUMENT"]
 activityRooms = appData["ACTIVITY_ROOMS"]
 foodRooms = appData["FOOD_ROOMS"]
 partyTypes = appData["PARTY_TYPES"]
+maximumChildren = appData["MAXIMUM_CHILDREN"]
 
 class BookingConfirmationApp(QMainWindow):
     def __init__(self):
@@ -284,7 +285,8 @@ class BookingConfirmationApp(QMainWindow):
             "PARTY_TYPE": PARTY_ACTIVITY,
             "PARTY_COST": PARTY_COST,
             "PARTY_ROOM": PARTY_ROOM,
-            "PARTY_FOOD_ROOM": PARTY_FOOD_ROOM
+            "PARTY_FOOD_ROOM": PARTY_FOOD_ROOM,
+            "MAX_CHILDREN": maximumChildren[PARTY_ACTIVITY]
         }
         ADMIN_INFORMATION = {
             "CUSTOMER_FIRST_NAME": self.CustomerNameEntry.text().split(" ")[0],
